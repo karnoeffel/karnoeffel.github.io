@@ -624,7 +624,7 @@
                     <textarea class="net-log" readonly style="height:140px"></textarea>
                 </details>
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
-                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 19:56</p>
+                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 20:13</p>
             </div>
         </div>
     </div>
@@ -1420,13 +1420,13 @@
         return buf;
     }
 
-    function createLuteBuffer(ctx, freq, durationSec = 2.8) {
+    function createLuteBuffer(ctx, freq, durationSec = 4.2) {
         const sr = ctx.sampleRate;
         const N = Math.floor(sr * durationSec);
         const out = new Float32Array(N);
         const courses = [{ f: freq, g: 1.0 }, { f: freq * (1 + (0.0012 + Math.random() * 0.0008)), g: 0.7 }];   // Doppelchor: ca. 2-3,5 Cent
         // Darmsaiten: tiefe Töne klingen lang, hohe kurz
-        const t60 = Math.max(0.9, 2.6 - (freq / 400) * 1.0);
+        const t60 = Math.max(1.4, 3.8 - (freq / 400) * 1.3);
 
         for (const c of courses) {
             const period = sr / c.f;
@@ -1632,7 +1632,8 @@
         const now = audioCtx.currentTime;
         const dt = Math.min(0.2, now - c.lastT); c.lastT = now;
 
-        if (Math.random() < 0.10) c.target = 0.80 + Math.random() * 0.40;         // neuer Zielwert
+        const I = (typeof band !== 'undefined') ? band.intensity : 0.5;
+        if (Math.random() < 0.10) c.target = 0.68 + 0.3 * I + Math.random() * 0.34;   // neuer Zielwert, dem Spiel folgend
         if (Math.random() < 0.015) c.target = 0.62 + Math.random() * 0.20;         // gelegentlich ein Nachlassen
         c.speed += (c.target - c.speed) * 0.09 + (Math.random() - 0.5) * 0.025;
         c.speed = Math.max(0.55, Math.min(1.3, c.speed));
@@ -1682,8 +1683,9 @@
         }
     }
 
-    function scheduleHurdyGurdyKeyAction(noteName, when, durationSec, isCrankAccent = false, ornamentNoteName = null) {
+    function scheduleHurdyGurdyKeyAction(noteName, when, durationSec, isCrankAccent = false, ornamentNoteName = null, vel = 1.0) {
         if (!audioCtx || !isMusicPlaying || !instEnabled.hg || !hgWheel || !FREQS[noteName]) return;
+        when = Math.max(audioCtx.currentTime, when + humanize('hg', isCrankAccent));
         const fTarget = FREQS[noteName];
         const freqs = hgWheel.chan.oscs.map(o => o.frequency);
         freqs.forEach(f => f.cancelScheduledValues(when));
@@ -1695,14 +1697,29 @@
         const fromBelow = fTarget * (1 - 0.012 - Math.random() * 0.01);
         freqs.forEach(f => { f.setValueAtTime(fromBelow, when); f.setTargetAtTime(fTarget, when, glide); });
         hgWheel.bowBP.frequency.setTargetAtTime(fTarget * 2, when, 0.01);
-        g.setTargetAtTime(0.11, when, 0.005);
-        const targetVol = isCrankAccent ? 0.21 : 0.17;
+        g.setTargetAtTime(0.11 * vel, when, 0.005);
+        const targetVol = (isCrankAccent ? 0.21 : 0.17) * vel;
         g.setTargetAtTime(targetVol, when + 0.02, 0.03);
-        g.setTargetAtTime(0.15, when + Math.max(0.08, durationSec * 0.6), 0.08);
+        if (durationSec >= 0.9) {
+            // Haltton: der Spieler gibt der Kurbel nach und wieder Druck - der Ton schwillt an und ab
+            const swell = 1.1 + Math.random() * 0.25, peakAt = durationSec * (0.35 + Math.random() * 0.25);
+            g.setTargetAtTime(targetVol * 0.9, when + 0.12, durationSec * 0.12);
+            g.setTargetAtTime(targetVol * swell, when + peakAt * 0.5, peakAt * 0.35);
+            g.setTargetAtTime(targetVol * 0.8, when + durationSec * 0.8, durationSec * 0.12);
+            // Druckwelle: Kurbel zieht leicht an und lässt nach
+            hgWheel.crank.speed = Math.min(1.3, hgWheel.crank.speed + 0.05);
+        } else {
+            g.setTargetAtTime(0.15 * vel, when + Math.max(0.08, durationSec * 0.6), 0.08);
+            // Kurze Töne bei lebhaftem Spiel: Tangente hebt kurz ab (detaché), nicht immer
+            if (durationSec < 0.3 && Math.random() < 0.3) g.setTargetAtTime(0.06 * vel, when + durationSec * 0.75, 0.02);
+        }
 
         if (ornamentNoteName && FREQS[ornamentNoteName] && durationSec >= 0.30) {
             const fOrn = FREQS[ornamentNoteName];
-            freqs.forEach(f => { f.setTargetAtTime(fOrn, when + 0.07, 0.006); f.setTargetAtTime(fTarget, when + 0.13, 0.006); });
+            const late = durationSec >= 0.9 && Math.random() < 0.5;   // auf langen Tönen auch mal spät verziert
+            const o0 = late ? durationSec * (0.55 + Math.random() * 0.2) : 0.07;
+            freqs.forEach(f => { f.setTargetAtTime(fOrn, when + o0, 0.006); f.setTargetAtTime(fTarget, when + o0 + 0.06, 0.006); });
+            if (late && Math.random() < 0.5) freqs.forEach(f => { f.setTargetAtTime(fOrn, when + o0 + 0.12, 0.006); f.setTargetAtTime(fTarget, when + o0 + 0.18, 0.006); });
         }
 
         // Kurbelruck: Schnarrsaite springt an - jeder Ruck ein wenig anders
@@ -1765,7 +1782,7 @@
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AudioCtx();
 
-        Object.keys(FREQS).forEach(note => { luteBuffers[note] = createLuteBuffer(audioCtx, FREQS[note], 2.8); });
+        Object.keys(FREQS).forEach(note => { luteBuffers[note] = createLuteBuffer(audioCtx, FREQS[note], 4.2); });
         ['GHOST', 'SOFT_RIM', 'MED_SKIN', 'HEAVY_ACCENT'].forEach(vType => { drumVelBuffers[vType] = createVelocityTaborBuffer(audioCtx, vType); });
 
         const comp = audioCtx.createDynamicsCompressor();
@@ -1826,15 +1843,29 @@
         }
     }
 
-    function scheduleLute(noteName, when, gainVal = 0.50) {
+    /* ---------- Humanizer ----------
+       Kein Mensch liegt genau auf dem Schlag. Jedes Instrument hat sein eigenes Zeitgefühl, das langsam
+       wandert (der Lautenist drängt, die Trommel hält, die Drehleier zieht), dazu kommt der Zufall jeder
+       einzelnen Note - auf dem Schlag enger, zwischen den Schlägen freier. */
+    const feel = { lute: 0.004, hg: 0.002, drum: 0.0 };
+    const FEEL_SPAN = { lute: 0.018, hg: 0.016, drum: 0.010 };
+    function humanize(inst, onBeat) {
+        feel[inst] += (Math.random() - 0.5) * 0.003;
+        feel[inst] = Math.max(-FEEL_SPAN[inst], Math.min(FEEL_SPAN[inst], feel[inst]));
+        const spread = (onBeat ? 0.55 : 1.0) * (inst === 'drum' ? 0.009 : 0.016);
+        const jitter = (Math.random() + Math.random() + Math.random() - 1.5) * spread;   // glockenförmig
+        return feel[inst] + jitter;
+    }
+
+    function scheduleLute(noteName, when, gainVal = 0.50, onBeat = false) {
         if (!audioCtx || !isMusicPlaying || !instEnabled.lute || !luteBuffers[noteName]) return;
         const src = audioCtx.createBufferSource();
         const g = audioCtx.createGain();
         src.buffer = luteBuffers[noteName];
         src.detune.value = (Math.random() * 2.0 - 1.0);
-        g.gain.setValueAtTime(gainVal * (0.92 + Math.random() * 0.16), when);
+        g.gain.setValueAtTime(gainVal * (0.88 + Math.random() * 0.24), when);
         src.connect(g); g.connect(luteInputBus);
-        src.start(when + Math.random() * 0.006);   // kein maschinell exaktes Timing
+        src.start(Math.max(audioCtx.currentTime, when + humanize('lute', onBeat)));
         src.onended = () => { src.disconnect(); g.disconnect(); };
     }
 
@@ -1856,9 +1887,9 @@
         const g = audioCtx.createGain();
         src.buffer = buf;
         src.detune.value = (Math.random() * 32 - 16);
-        g.gain.setValueAtTime(0.62 * velocityMultiplier * (0.88 + Math.random() * 0.24), when);
+        g.gain.setValueAtTime(0.62 * velocityMultiplier * (0.84 + Math.random() * 0.32), when);
         src.connect(g); g.connect(drumBus);
-        src.start(when);
+        src.start(Math.max(audioCtx.currentTime, when + humanize('drum', velocityMultiplier >= 0.85)));
         src.onended = () => { src.disconnect(); g.disconnect(); };
     }
 
@@ -1922,9 +1953,10 @@
         phrase: null, barInPhrase: 0, phraseNo: 0, role: 'question',
         intensity: 0.35, arcDir: 1, arcLeft: 6,
         texture: 'hg', textureLeft: 2,
-        lastEnd: null, lastBarDrum: null, cursor: null
+        lastEnd: null, lastBarDrum: null, cursor: null,
+        tempoDrift: 0, luteRest: false, dyn: 1.0
     };
-    function bandReset() { band.motif = null; band.phrase = null; band.barInPhrase = 0; band.phraseNo = 0; band.texture = 'hg'; band.textureLeft = 2; band.intensity = 0.35; band.arcDir = 1; band.arcLeft = 6; band.cursor = null; }
+    function bandReset() { band.motif = null; band.phrase = null; band.barInPhrase = 0; band.phraseNo = 0; band.texture = 'hg'; band.textureLeft = 2; band.intensity = 0.35; band.arcDir = 1; band.arcLeft = 6; band.cursor = null; band.tempoDrift = (Math.random() - 0.5) * 0.02; band.luteRest = false; }
 
     // Ein Motiv: 3-5 Schritte (Intervalle in Skalenstufen) mit Dauern - das Gedächtnis der Band
     function newMotif() {
@@ -2071,11 +2103,32 @@
         band.textureLeft = 2;
     }
     function scheduleTuning(t) {
-        // Die Laute stimmt an: Grundton, Quinte, Oktave - leise, unregelmäßig
-        const mood = TAVERN_MOODS[currentMoodIdx];
-        const tonic = mood.scale[mood.tonicIdx], fifth = mood.scale[mood.fifthIdx];
+        // Die Laute stimmt an - jedes Mal anders: Saiten prüfen, ein Lauf, ein Gedanke, der liegen bleibt
+        const mood = TAVERN_MOODS[currentMoodIdx], S = mood.scale, n = S.length;
+        const tonic = S[mood.tonicIdx], fifth = S[mood.fifthIdx];
         const low = tonic.replace(/\d/, d => String(+d - 1));
-        [[FREQS[low] ? low : tonic, 0], [fifth, 0.55 + Math.random() * 0.3], [tonic, 1.2 + Math.random() * 0.4]].forEach(([nn, dt]) => scheduleLute(nn, t + dt, 0.22));
+        const lowT = FREQS[low] ? low : tonic;
+        const ev = [];   // [Note, Zeit, Lautstärke]
+        let dt = 0;
+        const kind = pick(['check', 'check', 'run', 'thought', 'run']);
+        if (kind === 'check') {
+            // Saiten prüfen: Grundton, Quinte, manchmal zweimal nachgezupft, dann ein Vorhalt
+            [lowT, fifth, lowT, tonic].forEach((nn, k) => { if (k < 2 || chance(0.6)) { ev.push([nn, dt, 0.16 + Math.random() * 0.1]); dt += 0.35 + Math.random() * 0.45; } });
+            if (chance(0.5)) { ev.push([fifth, dt, 0.18]); dt += 0.25 + Math.random() * 0.2; ev.push([S[clampI(mood.fifthIdx + 1, n)], dt, 0.14]); dt += 0.5; ev.push([tonic, dt, 0.2]); }
+        } else if (kind === 'run') {
+            // ein kurzer Lauf hinauf und zurück, freier Takt, mit Beschleunigen und Nachlassen
+            const len = 4 + Math.floor(Math.random() * 4);
+            let idx = mood.tonicIdx, step = 0.2 + Math.random() * 0.1;
+            for (let k = 0; k < len; k++) { ev.push([S[idx], dt, 0.14 + 0.1 * (k / len)]); idx = moveIdx(idx, k < len * 0.6 ? 1 : -1, n); dt += step; step *= k < len * 0.6 ? 0.9 : 1.15; }
+            ev.push([tonic, dt + 0.15, 0.22]);
+        } else {
+            // ein Gedanke: drei, vier Töne aus dem Motivvorrat, zögernd, der letzte bleibt stehen
+            const m = newMotif(); let idx = clampI(mood.tonicIdx + pick([0, 2, 4]), n);
+            m.steps.slice(0, 3 + Math.floor(Math.random() * 2)).forEach((s, k) => { idx = moveIdx(idx, s, n); ev.push([S[idx], dt, 0.15 + Math.random() * 0.08]); dt += 0.3 + Math.random() * 0.4 + (k === 1 ? 0.3 : 0); });
+            ev.push([lowT, dt + 0.4, 0.2]);
+        }
+        ev.forEach(([nn, d, g]) => scheduleLute(nn, t + d, g));
+        return dt + 1.0;
     }
     function composeAndScheduleNextBar(barStartTime) {
         const mood = TAVERN_MOODS[currentMoodIdx];
@@ -2085,21 +2138,30 @@
 
         // ---- Pause zwischen zwei Stücken: Rad kommt zur Ruhe, Laute stimmt an, Rad läuft wieder an ----
         if (piece.phase === 'pause') {
-            const gap = 4 + Math.random() * 4;
+            const gap = 4.5 + Math.random() * 4;
             if (hgWheel && instEnabled.hg) {
                 hgWheel.master.gain.cancelScheduledValues(barStartTime);
                 hgWheel.master.gain.setTargetAtTime(0.0001, barStartTime, 0.6);
                 hgWheel.master.gain.setValueAtTime(0.0001, barStartTime + gap - 1.5);
                 hgWheel.master.gain.exponentialRampToValueAtTime(0.7, barStartTime + gap);
             }
-            if (instEnabled.lute) scheduleTuning(barStartTime + gap * 0.45);
+            if (instEnabled.lute) scheduleTuning(barStartTime + 1.0 + Math.random() * 0.8);
             newPiece();
             return gap;
         }
         // ---- Vorspiel: Bordun (und Trommel) finden zusammen ----
         if (piece.phase === 'intro') {
-            if (piece.drumsIntro && instEnabled.drum) pick(DRUM_PATTERNS[meter].sparse).forEach(h => scheduleTaborVelocity(h.t, barStartTime + h.s * EIGHTH, h.v * 0.8));
+            if (piece.drumsIntro && instEnabled.drum) pick(DRUM_PATTERNS[meter].sparse).forEach(h => scheduleTaborVelocity(h.t, barStartTime + h.s * EIGHTH, h.v * (0.6 + 0.3 * Math.random())));
             if (hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime, 0.1);
+            // Lautengeführte Stücke: ein freies kleines Präludium über dem Bordun - Lauf oder Gedanke, nie im Takt
+            if (!piece.drumsIntro && instEnabled.lute && piece.introLeft === 1 && chance(0.7)) {
+                const S = mood.scale, nn = S.length; let idx = mood.tonicIdx, d = 0, step = 0.26;
+                const len = 5 + Math.floor(Math.random() * 5);
+                for (let k = 0; k < len; k++) { scheduleLute(S[idx], barStartTime + d, 0.2 + 0.15 * (k / len)); idx = moveIdx(idx, k < len * 0.5 ? pick([1, 1, 2]) : pick([-1, -1, -2, 1]), nn); d += step; step *= (k < len * 0.5 ? 0.92 : 1.12); }
+                scheduleLute(S[mood.tonicIdx], barStartTime + d + 0.2, 0.3);
+                piece.phase = 'body';
+                return d + 0.9 + Math.random() * 0.5;
+            }
             if (--piece.introLeft <= 0) piece.phase = 'body';
             return meter * EIGHTH;
         }
@@ -2124,9 +2186,20 @@
         const I = band.intensity;
         const tex = band.texture;
         // Kadenztakte atmen: minimal breiter; der Schlusstakt des Stücks deutlich (Ritardando)
-        const stretch = finalBar ? 1.3 : (isCadence && band.role === 'answer' ? 1.05 : 1.0);
+        // Dazu das Rubato der Band: das Tempo wandert ein wenig, drängt in der Steigerung, hält in der Kadenz
+        band.tempoDrift = band.tempoDrift * 0.94 + (Math.random() - 0.5) * 0.012 + (bIdx === 2 ? -0.006 : bIdx === 3 ? 0.006 : 0);
+        band.tempoDrift = Math.max(-0.035, Math.min(0.035, band.tempoDrift));
+        const stretch = (finalBar ? 1.3 : (isCadence && band.role === 'answer' ? 1.05 : 1.0)) * (1 + band.tempoDrift);
         const E = EIGHTH * stretch;
         const barLen = meter * E;
+        // Dynamik der Phrase: Aussage verhalten, Steigerung voll, Kadenz abgefangen; die Antwort etwas leiser als die Frage
+        const contour = [0.82, 0.9, 1.0, 0.88][bIdx] * (band.role === 'answer' ? 0.94 : 1.0) * (0.72 + 0.4 * I);
+        band.dyn = contour * (0.94 + Math.random() * 0.12);
+        const noteVel = (onBeat, dur, posFrac) => {
+            // Akzent auf dem Schlag, lange Töne etwas getragen, in der Steigerung wächst es im Takt
+            let v = band.dyn * (onBeat ? 1.08 : 0.9) * (dur >= 3 ? 1.05 : 1.0) * (bIdx === 2 ? 0.92 + 0.16 * posFrac : 1.0);
+            return v * (0.9 + Math.random() * 0.2);
+        };
 
         // ---- Trommel: Dichte nach Spannung, Fills an Phrasenenden, Trommelsolo ----
         if (instEnabled.drum) {
@@ -2139,8 +2212,8 @@
             let pat = kind ? pick(DRUM_PATTERNS[meter][kind]) : [];
             if (band.lastBarDrum === pat && DRUM_PATTERNS[meter][kind].length > 1) pat = pick(DRUM_PATTERNS[meter][kind].filter(p => p !== pat));
             band.lastBarDrum = pat;
-            const lvl = (tex === 'drumsolo' ? 1.15 : tex === 'lute' ? 0.75 : 0.85 + 0.25 * I);
-            pat.forEach(h => { if (!(h.t === 'GHOST' && chance(0.25))) scheduleTaborVelocity(h.t, barStartTime + h.s * E, h.v * lvl); });
+            const lvl = (tex === 'drumsolo' ? 1.15 : tex === 'lute' ? 0.75 : 0.85 + 0.25 * I) * (0.8 + 0.25 * band.dyn);
+            pat.forEach(h => { if (!(h.t === 'GHOST' && chance(0.25))) scheduleTaborVelocity(h.t, barStartTime + h.s * E, h.v * lvl * (0.9 + 0.2 * Math.random())); });
             if (I > 0.6 && chance(0.3)) scheduleTaborVelocity('GHOST', barStartTime + (meter - 0.5) * E, 0.6);   // Auftakt-Ghost
         }
 
@@ -2152,42 +2225,67 @@
         if (tex === 'drumsolo') { if (hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime, 0.1); band.barInPhrase = (bIdx + 1) % 4; return barLen; }
 
         const beats = meter === 6 ? [0, 3] : [0, 4];
+        // Getragene Töne: bei ruhigem Spiel hält die Drehleier auch mal einen Ton über den halben oder ganzen Takt
+        const holdBar = (notes) => {
+            if (notes.length < 2) return notes;
+            const out = []; let i = 0;
+            while (i < notes.length) {
+                const x = { ...notes[i] };
+                if (!x.cadence && chance(0.5)) { while (i + 1 < notes.length && !notes[i + 1].cadence && x.dur + notes[i + 1].dur <= meter && chance(0.65)) { x.dur += notes[i + 1].dur; i++; } }
+                out.push(x); i++;
+            }
+            return out;
+        };
+        const hgLine = (I < 0.45 && chance(0.45 - I * 0.5)) || (tex === 'duet' && chance(0.2)) ? holdBar(melody) : melody;
         let pos = 0;
-        melody.forEach(nt => {
+        hgLine.forEach(nt => {
             const t = barStartTime + pos * E, durSec = nt.dur * E, onBeat = beats.includes(pos);
             const note = SCALE[clampI(nt.idx, n)], upper = SCALE[clampI(nt.idx + 1, n)];
             if (hgPlays && instEnabled.hg) {
                 const orn = ((nt.dur >= 3 && chance(0.45 + 0.3 * I)) || (nt.cadence && chance(0.7))) ? upper : null;
-                scheduleHurdyGurdyKeyAction(note, t, durSec, onBeat || (I > 0.7 && chance(0.3)), orn);
+                scheduleHurdyGurdyKeyAction(note, t, durSec, onBeat || (I > 0.7 && chance(0.3)), orn, noteVel(onBeat, nt.dur, pos / meter));
             }
             pos += nt.dur;
         });
 
         if (lutePlays && instEnabled.lute) {
-            const line = luteMode === 'hetero' ? heterophony(melody, n) : melody;
+            let line = luteMode === 'hetero' ? heterophony(melody, n) : melody;
+            // Der Lautenist lässt Töne stehen: bei ruhigem Spiel fasst er die Linie zu wenigen langen Tönen zusammen
+            if (luteMode !== 'unison' && chance(I < 0.4 ? 0.4 : 0.15)) line = holdBar(line);
             const level = luteMode === 'solo' ? 0.5 : (luteMode === 'unison' ? 0.42 : 0.34);
-            let p2 = 0;
+            // Nach einer Antwort-Kadenz lässt er den Schlusston gern ausklingen und setzt erst später wieder ein
+            const restUntil = band.luteRest ? meter / 2 : 0;
+            band.luteRest = false;
+            let p2 = 0, ringing = 0;
             line.forEach(nt => {
-                const t = barStartTime + p2 * E + (luteMode === 'hetero' ? 0.02 : 0.006);
+                const t = barStartTime + p2 * E + (luteMode === 'hetero' ? 0.02 : 0.0);
                 const onBeat = beats.includes(p2);
-                let note = SCALE[clampI(nt.idx, n)];
-                if (luteMode === 'solo' && chance(0.18)) { const low = note.replace(/\d/, d => String(+d - 1)); if (FREQS[low]) note = low; }
-                scheduleLute(note, t, onBeat ? level : level * 0.78);
-                if (luteMode === 'solo' && nt.dur >= 3 && chance(0.7)) {
-                    const bass = SCALE[mood.tonicIdx].replace(/\d/, d => String(+d - 1));
-                    if (FREQS[bass]) scheduleLute(bass, t + 0.03, level * 0.5);
+                const skip = p2 < restUntil || ringing > 0;
+                if (ringing > 0) ringing--;
+                if (!skip) {
+                    let note = SCALE[clampI(nt.idx, n)];
+                    if (luteMode === 'solo' && chance(0.18)) { const low = note.replace(/\d/, d => String(+d - 1)); if (FREQS[low]) note = low; }
+                    const vel = noteVel(onBeat, nt.dur, p2 / meter);
+                    scheduleLute(note, t, level * vel * (onBeat ? 1 : 0.8), onBeat);
+                    if (luteMode === 'solo' && nt.dur >= 3 && chance(0.7)) {
+                        const bass = SCALE[mood.tonicIdx].replace(/\d/, d => String(+d - 1));
+                        if (FREQS[bass]) scheduleLute(bass, t + 0.02 + Math.random() * 0.03, level * 0.5 * vel);
+                    }
+                    // Diminution im Solo bei hoher Spannung: Zwischentöne
+                    if (luteMode === 'solo' && I > 0.6 && nt.dur >= 2 && chance(0.4)) scheduleLute(SCALE[clampI(nt.idx + pick([-1, 1]), n)], t + E * (nt.dur - 1), level * 0.6 * vel);
+                    // und manchmal lässt er den Ton einfach klingen und überspringt den nächsten
+                    else if (luteMode !== 'unison' && !nt.cadence && chance(I < 0.5 ? 0.22 : 0.08)) ringing = 1;
                 }
-                // Diminution im Solo bei hoher Spannung: Zwischentöne
-                if (luteMode === 'solo' && I > 0.6 && nt.dur >= 2 && chance(0.4)) scheduleLute(SCALE[clampI(nt.idx + pick([-1, 1]), n)], t + E * (nt.dur - 1), level * 0.6);
                 p2 += nt.dur;
             });
+            if (isCadence && band.role === 'answer' && chance(0.4)) band.luteRest = true;
         }
         // Atempause: nach einer Antwort-Kadenz schweigt die Linie gelegentlich kurz (Trommel trägt)
         if (isCadence && band.role === 'answer' && chance(0.35) && hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.05, barStartTime + barLen * 0.75, 0.15);
 
         if (finalBar) {
             // Schlusston: Laute setzt Grundton mit Oktave, Drehleier hält und verklingt
-            if (instEnabled.lute) { const tonic = SCALE[mood.tonicIdx]; const low = tonic.replace(/\d/, d => String(+d - 1)); scheduleLute(FREQS[low] ? low : tonic, barStartTime + barLen - E * 2, 0.5); scheduleLute(tonic, barStartTime + barLen - E * 2 + 0.04, 0.4); }
+            if (instEnabled.lute) { const tonic = SCALE[mood.tonicIdx]; const low = tonic.replace(/\d/, d => String(+d - 1)); scheduleLute(FREQS[low] ? low : tonic, barStartTime + barLen - E * 2, 0.5, true); scheduleLute(tonic, barStartTime + barLen - E * 2 + 0.03 + Math.random() * 0.04, 0.4); }
             if (hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime + barLen + 0.8, 0.5);
             piece.phase = 'pause';
             band.barInPhrase = 0;
