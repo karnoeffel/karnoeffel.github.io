@@ -2217,13 +2217,13 @@
                 if (m.type !== 'HEARTBEAT') nlog('Vermittler: ' + m.type + (m.src ? ' von ' + m.src : ''));
                 if (m.type === 'OPEN') { this.opened = true; clearTimeout(this.openTimer); this.beat = setInterval(() => this.ws.readyState === 1 && this.ws.send('{"type":"HEARTBEAT"}'), 5000); handlers.onOpen && handlers.onOpen(); }
                 else if (m.type === 'ID-TAKEN') handlers.onError && handlers.onError('Dieser Tischcode ist gerade belegt – bitte neu eröffnen.');
-                else if (m.type === 'ERROR') handlers.onError && handlers.onError('Vermittler meldet: ' + ((m.payload && m.payload.msg) || 'Fehler'));
+                else if (m.type === 'ERROR') { nlog('Vermittler: ERROR ' + JSON.stringify(m.payload || {})); handlers.onError && handlers.onError('Vermittler meldet: ' + ((m.payload && m.payload.msg) || 'Fehler')); }
                 else if (m.type === 'EXPIRE') handlers.onExpire && handlers.onExpire(m.src);
                 else if (m.type === 'LEAVE') handlers.onLeave && handlers.onLeave(m.src);
                 else if (['OFFER', 'ANSWER', 'CANDIDATE'].includes(m.type)) handlers.onSignal && handlers.onSignal(m.type, m.src, m.payload);
             };
             this.ws.onerror = () => { nlog('Vermittler: WebSocket-Fehler'); if (!this.closed) handlers.onError && handlers.onError('Der Vermittler ist nicht erreichbar. Prüfe die Internetverbindung – oder nutze den Notweg (Einladungstext).'); };
-            this.ws.onclose = ev => { nlog('Vermittler: Verbindung geschlossen (Code ' + ev.code + ')'); clearInterval(this.beat); clearTimeout(this.openTimer); if (!this.closed) handlers.onClose && handlers.onClose(); };
+            this.ws.onclose = ev => { nlog('Vermittler: Verbindung geschlossen (Code ' + ev.code + (ev.reason ? ', Grund: ' + ev.reason : '') + ')'); clearInterval(this.beat); clearTimeout(this.openTimer); if (!this.closed) handlers.onClose && handlers.onClose(); };
         }
         send(type, dst, payload) { if (this.ws.readyState === 1) { this.ws.send(JSON.stringify({ type, dst, payload })); nlog('Vermittler: ' + type + ' an ' + dst + ' gesendet'); } else nlog('Vermittler: ' + type + ' nicht gesendet (Socket ' + this.ws.readyState + ')'); }
         close() { this.closed = true; clearInterval(this.beat); clearTimeout(this.openTimer); try { this.ws.close(); } catch (e) {} }
@@ -2323,12 +2323,13 @@
             dc.onclose = () => detachGuest(conn);
             dc.onerror = () => detachGuest(conn);
         };
-        const newPeer = id => {
+        const newPeer = (id, connectionId) => {
             const pc = new RTCPeerConnection(ICE_CONFIG);
-            const conn = { id, pc, dc: null, seat: -1, name: '', cq: makeCandidateQueue(pc), answered: false, pendingCands: [] };
+            const conn = { id, pc, dc: null, seat: -1, name: '', cq: makeCandidateQueue(pc), answered: false, pendingCands: [], connectionId: connectionId || ('dc_' + randId(12)) };
             pc.onicecandidate = ev => {
-                if (!ev.candidate || !hostNet.signal) return;
-                if (conn.answered) hostNet.signal.send('CANDIDATE', id, { candidate: ev.candidate }); else conn.pendingCands.push(ev.candidate);
+                if (!ev.candidate || !ev.candidate.candidate || !hostNet.signal) return;
+                const msg = { candidate: ev.candidate, type: 'data', connectionId: conn.connectionId };
+                if (conn.answered) hostNet.signal.send('CANDIDATE', id, msg); else conn.pendingCands.push(msg);
             };
             pc.ondatachannel = ev => { nlog('Gast ' + id + ': Datenkanal angeboten'); setupChannel(conn, ev.channel); };
             watchPC(pc, 'Gast ' + id);
@@ -2346,14 +2347,15 @@
                 let conn = conns.get(src);
                 if (type === 'OFFER') {
                     if (conn) { try { conn.pc.close(); } catch (e) {} }
-                    conn = newPeer(src);
+                    conn = newPeer(src, payload.connectionId);
+                    if (payload.metadata && payload.metadata.name) conn.name = payload.metadata.name;
                     await conn.pc.setRemoteDescription(payload.sdp);
                     await conn.cq.flush();
                     const answer = await conn.pc.createAnswer();
                     await conn.pc.setLocalDescription(answer);
-                    hostNet.signal.send('ANSWER', src, { sdp: conn.pc.localDescription });
+                    hostNet.signal.send('ANSWER', src, { sdp: conn.pc.localDescription, type: 'data', connectionId: conn.connectionId });
                     conn.answered = true;
-                    conn.pendingCands.forEach(c => hostNet.signal.send('CANDIDATE', src, { candidate: c }));
+                    conn.pendingCands.forEach(c => hostNet.signal.send('CANDIDATE', src, c));
                     conn.pendingCands = [];
                 } else if (type === 'CANDIDATE' && conn && payload.candidate) {
                     await conn.cq.add(payload.candidate);
@@ -2364,7 +2366,7 @@
         // Notweg: Einladung ohne Vermittler
         hostNet.makeInvite = async () => {
             const id = 'manual-' + randId(6);
-            const conn = newPeer(id);
+            const conn = newPeer(id, null);
             conn.pc.onicecandidate = null;
             const dc = conn.pc.createDataChannel('karnoeffel');
             setupChannel(conn, dc);
@@ -2404,24 +2406,34 @@
     }
     function connectGuest() {
         const g = guestNet;
+        g.answered = false;
+        const hostId = 'karnoeffel-' + g.code;
+        const connectionId = 'dc_' + randId(12);
         const sig = new Signal('kg-' + randId(8), {
             onOpen: async () => {
                 g.pc = new RTCPeerConnection(ICE_CONFIG);
                 g.cq = makeCandidateQueue(g.pc);
                 watchPC(g.pc, 'Tisch');
-                g.pc.onicecandidate = ev => { if (ev.candidate) sig.send('CANDIDATE', 'karnoeffel-' + g.code, { candidate: ev.candidate }); };
-                const dc = g.pc.createDataChannel('karnoeffel');
+                g.pc.onicecandidate = ev => { if (ev.candidate && ev.candidate.candidate) sig.send('CANDIDATE', hostId, { candidate: ev.candidate, type: 'data', connectionId }); };
+                const dc = g.pc.createDataChannel(connectionId, { ordered: true });
                 setupGuestChannel(dc);
                 const offer = await g.pc.createOffer();
                 await g.pc.setLocalDescription(offer);
-                sig.send('OFFER', 'karnoeffel-' + g.code, { sdp: g.pc.localDescription, name: myName });
+                sig.send('OFFER', hostId, { sdp: g.pc.localDescription, type: 'data', connectionId, metadata: { name: myName }, label: connectionId, reliable: true, serialization: 'json' });
                 setStartStatus('Vermittler erreicht – klopfe am Tisch an …');
                 g.expireTimer = setTimeout(() => { if (!g.open) setStartStatus('Keine Verbindung nach 20 s. Stimmt der Code? Ist der Geber noch da? Das Verbindungsprotokoll unten zeigt Einzelheiten.'); }, 20000);
             },
             onExpire: () => setStartStatus(`Kein Tisch mit dem Code „${g.code}“ gefunden.`),
             onError: msg => setStartStatus(msg),
+            onClose: () => {
+                // Vermittler hat getrennt, bevor die Antwort da war: bis zu dreimal neu anklopfen
+                if (g.open || g.answered) return;
+                g.sigTries = (g.sigTries || 0) + 1;
+                if (g.sigTries <= 3) { nlog('Vermittler hat vor der Antwort getrennt – neuer Versuch ' + g.sigTries); try { g.pc && g.pc.close(); } catch (e) {} setTimeout(connectGuest, 1200); }
+                else setStartStatus('Der Vermittler trennt die Verbindung, bevor der Tisch antwortet. Bitte den Notweg (Einladungstext) nutzen.');
+            },
             onSignal: async (type, src, payload) => {
-                if (type === 'ANSWER') { await g.pc.setRemoteDescription(payload.sdp); await g.cq.flush(); setStartStatus('Tisch gefunden – Direktverbindung wird aufgebaut …'); }
+                if (type === 'ANSWER') { g.answered = true; await g.pc.setRemoteDescription(payload.sdp); await g.cq.flush(); setStartStatus('Tisch gefunden – Direktverbindung wird aufgebaut …'); }
                 else if (type === 'CANDIDATE' && payload.candidate) await g.cq.add(payload.candidate);
             }
         });
