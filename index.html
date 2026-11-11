@@ -604,6 +604,10 @@
                         <button class="small-btn" onclick="copyText('invite-reply')">Kopieren</button>
                     </div>
                 </details>
+                <details class="notweg">
+                    <summary>Verbindungsprotokoll (bei Problemen)</summary>
+                    <textarea class="net-log" readonly style="height:140px"></textarea>
+                </details>
                 <p class="hint-text" style="margin-top:14px">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
             </div>
         </div>
@@ -638,6 +642,10 @@
                         <button class="small-btn" onclick="acceptAnswerClick()">Antwort annehmen</button>
                     </details>
                 </div>
+                <details class="notweg">
+                    <summary>Verbindungsprotokoll (bei Problemen)</summary>
+                    <textarea class="net-log" readonly style="height:140px"></textarea>
+                </details>
                 <div id="lobby-guest-note" style="display:none">
                     <p class="hint-text" style="text-align:center">Warte, bis der Geber die Schlacht beginnt. Mit „Hierher setzen“ kannst du noch den Platz wechseln.</p>
                     <div class="btn-row"><button class="btn secondary" onclick="leaveTable()">Tisch verlassen</button></div>
@@ -2168,30 +2176,57 @@
         return 'wss://0.peerjs.com:443/peerjs?key=peerjs';
     })();
     const randId = (n = 10) => Array.from(crypto.getRandomValues(new Uint8Array(n))).map(b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('');
-    const CODE_WORDS = ['schellen', 'eichel', 'schilt', 'rose', 'papst', 'kaiser', 'teufel', 'banner', 'knecht', 'landser', 'spiess', 'trommel'];
+    const CODE_WORDS = ['schellen', 'eichel', 'schilt', 'rose', 'papst', 'kaiser', 'teufel', 'banner', 'laute', 'kerze', 'becher', 'trommel'];
     const genCode = () => `${CODE_WORDS[Math.floor(Math.random() * CODE_WORDS.length)]}-${CODE_WORDS[Math.floor(Math.random() * CODE_WORDS.length)]}-${Math.floor(Math.random() * 90 + 10)}`;
     const normCode = s => s.trim().toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+
+    // Verbindungsprotokoll (für die Fehlersuche sichtbar unter "Verbindungsprotokoll")
+    const netLog = [];
+    function nlog(msg) {
+        const line = new Date().toLocaleTimeString() + '  ' + msg;
+        netLog.push(line); if (netLog.length > 60) netLog.shift();
+        document.querySelectorAll('.net-log').forEach(el => { el.textContent = netLog.join('\n'); el.scrollTop = el.scrollHeight; });
+    }
+    // Kandidaten dürfen erst gesetzt werden, wenn die Gegenseite beschrieben ist - sonst gehen sie verloren
+    function makeCandidateQueue(pc) {
+        const q = [];
+        return {
+            add: async cand => {
+                if (pc.remoteDescription) { try { await pc.addIceCandidate(cand); } catch (e) { nlog('Kandidat verworfen: ' + e.message); } }
+                else q.push(cand);
+            },
+            flush: async () => { while (q.length) { const c = q.shift(); try { await pc.addIceCandidate(c); } catch (e) { nlog('Kandidat verworfen: ' + e.message); } } }
+        };
+    }
+    function watchPC(pc, label) {
+        pc.oniceconnectionstatechange = () => nlog(label + ': ICE ' + pc.iceConnectionState);
+        pc.onconnectionstatechange = () => nlog(label + ': Verbindung ' + pc.connectionState);
+        pc.onicegatheringstatechange = () => nlog(label + ': Kandidatensuche ' + pc.iceGatheringState);
+    }
 
     // Verbindung zum Vermittler: er reicht nur Adressen (OFFER/ANSWER/CANDIDATE) zwischen zwei Browsern weiter
     class Signal {
         constructor(id, handlers) {
             this.id = id; this.h = handlers; this.closed = false;
             const url = `${SIGNAL_BASE}&id=${encodeURIComponent(id)}&token=${randId(16)}&version=1.5.5`;
+            nlog('Vermittler: verbinde als ' + id + ' …');
             this.ws = new WebSocket(url);
+            this.openTimer = setTimeout(() => { if (!this.opened && !this.closed) { nlog('Vermittler: keine Antwort nach 10 s'); handlers.onError && handlers.onError('Der Vermittler antwortet nicht. Netz blockiert? Dann den Notweg (Einladungstext) nutzen.'); } }, 10000);
             this.ws.onmessage = ev => {
                 let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
-                if (m.type === 'OPEN') { this.beat = setInterval(() => this.ws.readyState === 1 && this.ws.send('{"type":"HEARTBEAT"}'), 5000); handlers.onOpen && handlers.onOpen(); }
+                if (m.type !== 'HEARTBEAT') nlog('Vermittler: ' + m.type + (m.src ? ' von ' + m.src : ''));
+                if (m.type === 'OPEN') { this.opened = true; clearTimeout(this.openTimer); this.beat = setInterval(() => this.ws.readyState === 1 && this.ws.send('{"type":"HEARTBEAT"}'), 5000); handlers.onOpen && handlers.onOpen(); }
                 else if (m.type === 'ID-TAKEN') handlers.onError && handlers.onError('Dieser Tischcode ist gerade belegt – bitte neu eröffnen.');
                 else if (m.type === 'ERROR') handlers.onError && handlers.onError('Vermittler meldet: ' + ((m.payload && m.payload.msg) || 'Fehler'));
                 else if (m.type === 'EXPIRE') handlers.onExpire && handlers.onExpire(m.src);
                 else if (m.type === 'LEAVE') handlers.onLeave && handlers.onLeave(m.src);
                 else if (['OFFER', 'ANSWER', 'CANDIDATE'].includes(m.type)) handlers.onSignal && handlers.onSignal(m.type, m.src, m.payload);
             };
-            this.ws.onerror = () => { if (!this.closed) handlers.onError && handlers.onError('Der Vermittler ist nicht erreichbar. Prüfe die Internetverbindung – oder nutze den Notweg (Einladungstext).'); };
-            this.ws.onclose = () => { clearInterval(this.beat); if (!this.closed) handlers.onClose && handlers.onClose(); };
+            this.ws.onerror = () => { nlog('Vermittler: WebSocket-Fehler'); if (!this.closed) handlers.onError && handlers.onError('Der Vermittler ist nicht erreichbar. Prüfe die Internetverbindung – oder nutze den Notweg (Einladungstext).'); };
+            this.ws.onclose = ev => { nlog('Vermittler: Verbindung geschlossen (Code ' + ev.code + ')'); clearInterval(this.beat); clearTimeout(this.openTimer); if (!this.closed) handlers.onClose && handlers.onClose(); };
         }
-        send(type, dst, payload) { if (this.ws.readyState === 1) this.ws.send(JSON.stringify({ type, dst, payload })); }
-        close() { this.closed = true; clearInterval(this.beat); try { this.ws.close(); } catch (e) {} }
+        send(type, dst, payload) { if (this.ws.readyState === 1) { this.ws.send(JSON.stringify({ type, dst, payload })); nlog('Vermittler: ' + type + ' an ' + dst + ' gesendet'); } else nlog('Vermittler: ' + type + ' nicht gesendet (Socket ' + this.ws.readyState + ')'); }
+        close() { this.closed = true; clearInterval(this.beat); clearTimeout(this.openTimer); try { this.ws.close(); } catch (e) {} }
     }
 
     // Einladungstext (Notweg): SDP komprimiert und Base64-kodiert
@@ -2283,16 +2318,21 @@
         };
         const setupChannel = (conn, dc) => {
             conn.dc = dc;
+            dc.onopen = () => nlog('Gast ' + conn.id + ': Datenkanal offen');
             dc.onmessage = ev => { try { handleGuestMessage(conn, JSON.parse(ev.data)); } catch (e) {} };
             dc.onclose = () => detachGuest(conn);
             dc.onerror = () => detachGuest(conn);
         };
         const newPeer = id => {
             const pc = new RTCPeerConnection(ICE_CONFIG);
-            const conn = { id, pc, dc: null, seat: -1, name: '' };
-            pc.onicecandidate = ev => { if (ev.candidate && hostNet.signal) hostNet.signal.send('CANDIDATE', id, { candidate: ev.candidate }); };
-            pc.ondatachannel = ev => setupChannel(conn, ev.channel);
-            pc.onconnectionstatechange = () => { if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) detachGuest(conn); };
+            const conn = { id, pc, dc: null, seat: -1, name: '', cq: makeCandidateQueue(pc), answered: false, pendingCands: [] };
+            pc.onicecandidate = ev => {
+                if (!ev.candidate || !hostNet.signal) return;
+                if (conn.answered) hostNet.signal.send('CANDIDATE', id, { candidate: ev.candidate }); else conn.pendingCands.push(ev.candidate);
+            };
+            pc.ondatachannel = ev => { nlog('Gast ' + id + ': Datenkanal angeboten'); setupChannel(conn, ev.channel); };
+            watchPC(pc, 'Gast ' + id);
+            pc.addEventListener('connectionstatechange', () => { if (['failed', 'closed'].includes(pc.connectionState)) detachGuest(conn); });
             conns.set(id, conn);
             return conn;
         };
@@ -2308,11 +2348,15 @@
                     if (conn) { try { conn.pc.close(); } catch (e) {} }
                     conn = newPeer(src);
                     await conn.pc.setRemoteDescription(payload.sdp);
+                    await conn.cq.flush();
                     const answer = await conn.pc.createAnswer();
                     await conn.pc.setLocalDescription(answer);
                     hostNet.signal.send('ANSWER', src, { sdp: conn.pc.localDescription });
+                    conn.answered = true;
+                    conn.pendingCands.forEach(c => hostNet.signal.send('CANDIDATE', src, { candidate: c }));
+                    conn.pendingCands = [];
                 } else if (type === 'CANDIDATE' && conn && payload.candidate) {
-                    try { await conn.pc.addIceCandidate(payload.candidate); } catch (e) {}
+                    await conn.cq.add(payload.candidate);
                 }
             }
         });
@@ -2363,19 +2407,22 @@
         const sig = new Signal('kg-' + randId(8), {
             onOpen: async () => {
                 g.pc = new RTCPeerConnection(ICE_CONFIG);
+                g.cq = makeCandidateQueue(g.pc);
+                watchPC(g.pc, 'Tisch');
                 g.pc.onicecandidate = ev => { if (ev.candidate) sig.send('CANDIDATE', 'karnoeffel-' + g.code, { candidate: ev.candidate }); };
                 const dc = g.pc.createDataChannel('karnoeffel');
                 setupGuestChannel(dc);
                 const offer = await g.pc.createOffer();
                 await g.pc.setLocalDescription(offer);
                 sig.send('OFFER', 'karnoeffel-' + g.code, { sdp: g.pc.localDescription, name: myName });
-                g.expireTimer = setTimeout(() => { if (!g.open) setStartStatus('Keine Antwort vom Tisch. Stimmt der Code? Ist der Geber noch da?'); }, 12000);
+                setStartStatus('Vermittler erreicht – klopfe am Tisch an …');
+                g.expireTimer = setTimeout(() => { if (!g.open) setStartStatus('Keine Verbindung nach 20 s. Stimmt der Code? Ist der Geber noch da? Das Verbindungsprotokoll unten zeigt Einzelheiten.'); }, 20000);
             },
             onExpire: () => setStartStatus(`Kein Tisch mit dem Code „${g.code}“ gefunden.`),
             onError: msg => setStartStatus(msg),
             onSignal: async (type, src, payload) => {
-                if (type === 'ANSWER') await g.pc.setRemoteDescription(payload.sdp);
-                else if (type === 'CANDIDATE' && payload.candidate) { try { await g.pc.addIceCandidate(payload.candidate); } catch (e) {} }
+                if (type === 'ANSWER') { await g.pc.setRemoteDescription(payload.sdp); await g.cq.flush(); setStartStatus('Tisch gefunden – Direktverbindung wird aufgebaut …'); }
+                else if (type === 'CANDIDATE' && payload.candidate) await g.cq.add(payload.candidate);
             }
         });
         g.signal = sig;
@@ -2384,6 +2431,7 @@
         const g = guestNet;
         g.dc = dc;
         dc.onopen = () => {
+            nlog('Datenkanal zum Tisch offen');
             g.open = true; clearTimeout(g.expireTimer);
             if (g.signal) { g.signal.close(); g.signal = null; }       // der Vermittler wird nicht mehr gebraucht
             dc.send(JSON.stringify({ t: 'hello', name: myName }));
