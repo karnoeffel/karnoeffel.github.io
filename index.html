@@ -625,7 +625,7 @@
                     <textarea class="net-log" readonly style="height:140px"></textarea>
                 </details>
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
-                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 21:00</p>
+                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 21:24</p>
             </div>
         </div>
     </div>
@@ -1260,12 +1260,35 @@
     // Browser erlauben Klang erst nach einer Nutzer-Geste: erster Klick/Tastendruck startet die Engine
     ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, ensureAudioReady, { once: true }));
 
+    // Der Kartenwurf wird nicht beim Wurf berechnet, sondern einmal als kleiner Vorrat (8 Varianten);
+    // beim Wurf wird nur noch abgespielt - leicht verstimmt, damit keiner wie der andere klingt.
+    const cardThrowPool = [];
+    let lastCardThrowAt = 0;
     function playCardThrowSound(playerIdx = 0, strength = 1.0) {
         if (!audioCtx || !sfxBus || audioCtx.state !== 'running') return;
         const now = audioCtx.currentTime;
-        const sr = audioCtx.sampleRate;
+        if (now - lastCardThrowAt < 0.03) return;                 // zwei Würfe im selben Augenblick: einer reicht
+        lastCardThrowAt = now;
+        if (cardThrowPool.length < 8) cardThrowPool.push(createCardThrowBuffer(audioCtx, cardThrowPool.length));
+        const src = audioCtx.createBufferSource();
+        const panner = audioCtx.createStereoPanner();
+        const gain = audioCtx.createGain();
+        const panPositions = [0.0, -0.45, 0.0, 0.45];
+        const distGains    = [1.0,  0.85, 0.76, 0.85];
+        panner.pan.value = panPositions[playerIdx] + (Math.random() * 0.12 - 0.06);
         const velocity = (0.60 + Math.random() * 0.55) * strength;
-        const pitchVar = 0.85 + Math.random() * 0.30;
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(distGains[playerIdx] * velocity, now + 0.003);
+        src.buffer = cardThrowPool[Math.floor(Math.random() * cardThrowPool.length)];
+        src.playbackRate.value = 0.9 + Math.random() * 0.2;
+        src.connect(gain); gain.connect(panner); panner.connect(sfxBus);
+        src.start(now);
+        src.onended = () => { src.disconnect(); gain.disconnect(); panner.disconnect(); };
+    }
+    function createCardThrowBuffer(audioCtx, seedIdx) {
+        const sr = audioCtx.sampleRate;
+        const velocity = 1.0;
+        const pitchVar = 0.85 + (seedIdx / 8) * 0.30;
         const slideLen = 0.045 + Math.random() * 0.045;
         const totalDur = 0.13;
         const len = Math.floor(sr * totalDur);
@@ -1295,26 +1318,19 @@
             }
             const sample = (crispPaperNoise * (whooshEnv + slideEnv) + woodImpact + cardSnap) * velocity;
             woodRes1 += 0.42 * (sample - woodRes1);
-            out[i] = Math.tanh((sample * 0.7 + woodRes1 * 0.3) * 1.2) * 0.24;
+            const tail = i > len - 200 ? (len - i) / 200 : 1;    // sauber auslaufen
+            out[i] = Math.tanh((sample * 0.7 + woodRes1 * 0.3) * 1.2) * 0.24 * tail;
         }
-        const src = audioCtx.createBufferSource();
-        const panner = audioCtx.createStereoPanner();
-        const gain = audioCtx.createGain();
-        const panPositions = [0.0, -0.45, 0.0, 0.45];
-        const distGains    = [1.0,  0.85, 0.76, 0.85];
-        panner.pan.value = panPositions[playerIdx] + (Math.random() * 0.12 - 0.06);
-        gain.gain.value = distGains[playerIdx];
-        src.buffer = buf;
-        src.connect(gain); gain.connect(panner); panner.connect(sfxBus);
-        src.start(now);
-        src.onended = () => { src.disconnect(); gain.disconnect(); panner.disconnect(); };
+        return buf;
     }
 
+    let sweepBuffer = null;
     function playTrickSweepSound(winnerIdx = 0) {
         if (!audioCtx || !sfxBus) return;
         const now = audioCtx.currentTime, sr = audioCtx.sampleRate;
         const dur = 0.22, len = Math.floor(sr * dur);
-        const buf = audioCtx.createBuffer(1, len, sr);
+        const buf = sweepBuffer || (sweepBuffer = audioCtx.createBuffer(1, len, sr));
+        if (!buf._done) { buf._done = true;
         const out = buf.getChannelData(0);
         let lp = 0, hp = 0;
         for (let i = 0; i < len; i++) {
@@ -1326,11 +1342,11 @@
             const env1 = (t < 0.08) ? Math.sin((t / 0.08) * Math.PI) * 0.20 : 0;
             const env2 = (t >= 0.06) ? Math.sin(((t - 0.06) / 0.16) * Math.PI) * Math.exp(-(t - 0.06) * 12) * 0.26 : 0;
             out[i] = paperScrape * (env1 + env2) * 0.22;
-        }
+        } }
         const src = audioCtx.createBufferSource();
         const pan = audioCtx.createStereoPanner();
         pan.pan.value = [0.0, -0.4, 0.0, 0.4][winnerIdx] || 0;
-        src.buffer = buf;
+        src.buffer = buf; src.playbackRate.value = 0.92 + Math.random() * 0.16;
         src.connect(pan); pan.connect(sfxBus);
         src.start(now);
         src.onended = () => { src.disconnect(); pan.disconnect(); };
@@ -1701,8 +1717,8 @@
         g.cancelScheduledValues(when);
 
         // Tangente legt sich an die Saite: kein Klick, nur ein winziges Abdämpfen und ein kurzer Gleitweg
-        const glide = 0.008 + Math.random() * 0.008;
-        const fromBelow = fTarget * (1 - 0.012 - Math.random() * 0.01);
+        const glide = 0.004 + Math.random() * 0.004;
+        const fromBelow = fTarget * (1 - 0.004 - Math.random() * 0.004);   // Tangente: fast sofort da, nur ein Hauch von unten
         freqs.forEach(f => { f.setValueAtTime(fromBelow, when); f.setTargetAtTime(fTarget, when, glide); });
         hgWheel.bowBP.frequency.setTargetAtTime(fTarget * 2, when, 0.01);
         g.setTargetAtTime(0.11 * vel, when, 0.005);
@@ -1723,17 +1739,17 @@
         }
 
         if (ornamentNoteName && FREQS[ornamentNoteName] && durationSec >= 0.30) {
+            // Mordent: die Nachbartangente schlägt kurz an - ein Tastenschlag, kein Gleiten
             const fOrn = FREQS[ornamentNoteName];
-            const late = durationSec >= 0.9 && Math.random() < 0.5;   // auf langen Tönen auch mal spät verziert
-            const o0 = late ? durationSec * (0.55 + Math.random() * 0.2) : 0.07;
-            freqs.forEach(f => { f.setTargetAtTime(fOrn, when + o0, 0.006); f.setTargetAtTime(fTarget, when + o0 + 0.06, 0.006); });
-            if (late && Math.random() < 0.5) freqs.forEach(f => { f.setTargetAtTime(fOrn, when + o0 + 0.12, 0.006); f.setTargetAtTime(fTarget, when + o0 + 0.18, 0.006); });
+            const o0 = 0.06 + Math.random() * 0.02;
+            freqs.forEach(f => { f.setValueAtTime(fOrn, when + o0); f.setValueAtTime(fTarget, when + o0 + 0.05 + Math.random() * 0.02); });
         }
 
         // Kurbelruck: Schnarrsaite springt an - jeder Ruck ein wenig anders
         // Schnarrsaite: wie stark der Spieler sie anspringen lässt, wandert mit Spannung und Laune
         const chienLvl = (typeof band !== 'undefined') ? band.chien * band.chienBar : 0.6;
-        if ((isCrankAccent && Math.random() < 0.35 + 0.65 * chienLvl) || Math.random() < 0.22 * chienLvl) {
+        const chienBusy = hgWheel.chienUntil && when < hgWheel.chienUntil;       // der letzte Ruck klingt noch: kein zweiter obendrauf
+        if (!chienBusy && ((isCrankAccent && Math.random() < 0.35 + 0.65 * chienLvl) || Math.random() < 0.22 * chienLvl)) {
             const e = hgWheel.chienEnv.gain;
             const strength = (isCrankAccent ? 0.3 + Math.random() * 0.3 : 0.1 + Math.random() * 0.1) * (0.15 + 1.1 * chienLvl);
             // Jeder Ruck ist anders: mal ein kurzes "tk", mal ein längeres Schnarren, mal hell, mal dumpf
@@ -1743,8 +1759,9 @@
             hgWheel.trompBP.frequency.setTargetAtTime(900 + Math.random() * 1500, when - 0.02, 0.03);
             hgWheel.trompBP.Q.setTargetAtTime(0.5 + Math.random() * 1.2, when - 0.02, 0.03);
             e.cancelScheduledValues(when);
-            e.setTargetAtTime(strength, when, 0.006);          // kein harter Sprung, auch wenn der letzte Ruck noch ausklingt
+            e.setTargetAtTime(strength, when, 0.006);
             e.setTargetAtTime(0.0, when + len, 0.04);
+            hgWheel.chienUntil = when + len + 0.1;
             // der Ruck gibt auch den anderen Saiten einen kleinen Schub
             hgWheel.crank.speed = Math.min(1.3, hgWheel.crank.speed + 0.08);
         }
@@ -1754,19 +1771,21 @@
     function createVelocityTaborBuffer(ctx, velType) {
         const sr = ctx.sampleRate;
         const isRim = (velType === 'GHOST' || velType === 'SOFT_RIM');
-        const isHeavy = (velType === 'HEAVY_ACCENT');
-        const dur = isHeavy ? 0.44 : (velType === 'MED_SKIN' ? 0.36 : 0.24);
+        const isDeep = (velType === 'DEEP');
+        const isHeavy = (velType === 'HEAVY_ACCENT') || isDeep;
+        const dur = isDeep ? 1.1 : isHeavy ? 0.44 : (velType === 'MED_SKIN' ? 0.36 : 0.24);
         const len = Math.floor(sr * dur);
         const buf = ctx.createBuffer(1, len, sr);
         const out = buf.getChannelData(0);
-        const baseFreq = isRim ? 136.0 : 94.0;
+        const baseFreq = isRim ? 136.0 : (isDeep ? 58.0 : 94.0);
         const modeRatios = [1.0, 1.593, 2.135, 2.65];
-        const modeDecays = isHeavy ? [9.0, 14.5, 21.0, 29.0] : (isRim ? [16.0, 23.0, 33.0, 42.0] : [11.5, 17.5, 25.0, 34.0]);
-        const modeGains  = isRim ? [0.32, 0.48, 0.25, 0.12] : [0.70, 0.28, 0.14, 0.07];
+        // der tiefe Schlag in die Fellmitte: der Grundton klingt lange nach, die Obertöne verschwinden schnell
+        const modeDecays = isDeep ? [3.6, 9.0, 16.0, 24.0] : isHeavy ? [9.0, 14.5, 21.0, 29.0] : (isRim ? [16.0, 23.0, 33.0, 42.0] : [11.5, 17.5, 25.0, 34.0]);
+        const modeGains  = isRim ? [0.32, 0.48, 0.25, 0.12] : (isDeep ? [0.9, 0.2, 0.08, 0.03] : [0.70, 0.28, 0.14, 0.07]);
         const phases = [0, 0, 0, 0];
-        const attackSharpness = isHeavy ? 1.20 : (velType === 'MED_SKIN' ? 0.78 : (velType === 'SOFT_RIM' ? 0.48 : 0.24));
-        const pitchBendAmount = isHeavy ? 0.52 : (velType === 'MED_SKIN' ? 0.32 : 0.14);
-        const overallGain     = isHeavy ? 0.88 : (velType === 'MED_SKIN' ? 0.62 : (velType === 'SOFT_RIM' ? 0.40 : 0.20));
+        const attackSharpness = isDeep ? 0.5 : isHeavy ? 1.20 : (velType === 'MED_SKIN' ? 0.78 : (velType === 'SOFT_RIM' ? 0.48 : 0.24));
+        const pitchBendAmount = isDeep ? 0.7 : isHeavy ? 0.52 : (velType === 'MED_SKIN' ? 0.32 : 0.14);
+        const overallGain     = isDeep ? 0.5 : isHeavy ? 0.88 : (velType === 'MED_SKIN' ? 0.62 : (velType === 'SOFT_RIM' ? 0.40 : 0.20));
         let woodClickLP = 0, snareLP = 0, shellRes = 0;
         for (let i = 0; i < len; i++) {
             const t = i / sr;
@@ -1782,10 +1801,11 @@
                 skinSignal += Math.sin(phases[m]) * Math.exp(-t * modeDecays[m]) * modeGains[m];
             }
             snareLP = 0.64 * snareLP + 0.36 * (Math.random() * 2 - 1);
-            const snareAmt = isHeavy ? 0.32 : (velType === 'MED_SKIN' ? 0.20 : 0.08);
+            const snareAmt = isDeep ? 0.12 : isHeavy ? 0.32 : (velType === 'MED_SKIN' ? 0.20 : 0.08);
             const gutSnare = snareLP * (Math.abs(skinSignal) * 0.5 + Math.exp(-t * 35) * 0.16) * snareAmt;
             shellRes += 0.18 * (skinSignal - shellRes);
-            out[i] = Math.tanh((beaterAttack + skinSignal * 0.85 + shellRes * 0.35 + gutSnare) * 1.32) * overallGain;
+            const tail = i > len - 400 ? (len - i) / 400 : 1;
+            out[i] = Math.tanh((beaterAttack + skinSignal * 0.85 + shellRes * 0.35 + gutSnare) * 1.32) * overallGain * tail;
         }
         return buf;
     }
@@ -1796,7 +1816,7 @@
         audioCtx = new AudioCtx();
 
         Object.keys(FREQS).forEach(note => { luteBuffers[note] = createLuteBuffer(audioCtx, FREQS[note], 4.2); });
-        ['GHOST', 'SOFT_RIM', 'MED_SKIN', 'HEAVY_ACCENT'].forEach(vType => { drumVelBuffers[vType] = createVelocityTaborBuffer(audioCtx, vType); });
+        ['GHOST', 'SOFT_RIM', 'MED_SKIN', 'HEAVY_ACCENT', 'DEEP'].forEach(vType => { drumVelBuffers[vType] = createVelocityTaborBuffer(audioCtx, vType); });
 
         const comp = audioCtx.createDynamicsCompressor();
         comp.threshold.value = -8; comp.knee.value = 10; comp.ratio.value = 2.5; comp.attack.value = 0.02; comp.release.value = 0.25;
@@ -1906,7 +1926,7 @@
         src.detune.value = (Math.random() * 32 - 16);
         g.gain.setValueAtTime(0.62 * velocityMultiplier * (0.84 + Math.random() * 0.32), when);
         src.connect(g); g.connect(drumBus);
-        src.start(Math.max(audioCtx.currentTime, when + humanize('drum', velocityMultiplier >= 0.85)));
+        src.start(Math.max(audioCtx.currentTime, when + humanize('drum', velocityMultiplier >= 0.85 || velType === 'DEEP')));
         src.onended = () => { src.disconnect(); g.disconnect(); };
     }
 
@@ -1971,9 +1991,9 @@
         intensity: 0.35, arcDir: 1, arcLeft: 6,
         texture: 'hg', textureLeft: 2,
         lastEnd: null, lastBarDrum: null, cursor: null,
-        tempoDrift: 0, luteRest: false, dyn: 1.0, chien: 0.6, chienBar: 1.0
+        tempoDrift: 0, luteRest: false, dyn: 1.0, chien: 0.6, chienBar: 1.0, luteSilence: 0
     };
-    function bandReset() { band.motif = null; band.phrase = null; band.barInPhrase = 0; band.phraseNo = 0; band.texture = 'hg'; band.textureLeft = 2; band.intensity = 0.35; band.arcDir = 1; band.arcLeft = 6; band.cursor = null; band.tempoDrift = (Math.random() - 0.5) * 0.02; band.luteRest = false; }
+    function bandReset() { band.motif = null; band.phrase = null; band.barInPhrase = 0; band.phraseNo = 0; band.texture = 'hg'; band.textureLeft = 2; band.intensity = 0.35; band.arcDir = 1; band.arcLeft = 6; band.cursor = null; band.tempoDrift = (Math.random() - 0.5) * 0.02; band.luteRest = false; band.luteSilence = 0; }
 
     // Ein Motiv: 3-5 Schritte (Intervalle in Skalenstufen) mit Dauern - das Gedächtnis der Band
     function newMotif() {
@@ -2042,10 +2062,14 @@
         const target = role === 'answer' ? clampI(tonic + reg, n) : (chance(0.75) ? clampI(fifth + reg - (reg ? 7 : 0), n) : clampI(tonic + reg + 1, n));
         const approach = clampI(target + (chance(0.5) ? (idx > target ? 1 : -1) : pick([-1, 1])), n);
         let cur = idx;
+        // Alte Kadenzformel: Unterterz-Schluss (Landini) - Leitton, Sexte, Grundton
+        const landini = role === 'answer' && cell.length >= 3 && chance(0.35);
         cell.forEach((d, k) => {
             const L = cell.length;
             let v;
-            if (k === L - 1) v = target;
+            if (landini && k === L - 3) v = clampI(target - 1, n);
+            else if (landini && k === L - 2) v = clampI(target - 2, n);
+            else if (k === L - 1) v = target;
             else if (k === L - 2) v = approach;
             else { cur = clampI(cur + (cur > approach ? -1 : cur < approach ? 1 : pick([-1, 1])), n); v = cur; }
             cad.push({ idx: v, dur: d, cadence: k === L - 1 });
@@ -2250,7 +2274,15 @@
             if (band.lastBarDrum === pat && DRUM_PATTERNS[meter][kind].length > 1) pat = pick(DRUM_PATTERNS[meter][kind].filter(p => p !== pat));
             band.lastBarDrum = pat;
             const lvl = (tex === 'drumsolo' ? 1.15 : tex === 'lute' ? 0.75 : 0.85 + 0.25 * I) * (0.8 + 0.25 * band.dyn);
-            pat.forEach(h => { if (!(h.t === 'GHOST' && chance(0.25))) scheduleTaborVelocity(h.t, barStartTime + h.s * E, h.v * lvl * (0.9 + 0.2 * Math.random())); });
+            // Der tiefe Schlag in die Fellmitte: auf der Eins, im ruhigen Spiel öfter, zum Schluss immer
+            const deepP = finalBar ? 1 : (I < 0.4 ? 0.5 : 0.22);
+            pat.forEach(h => {
+                if (h.t === 'GHOST' && chance(0.25)) return;
+                let type = h.t;
+                if (h.s === 0 && (type === 'HEAVY_ACCENT' || type === 'FLAM' || type === 'MED_SKIN') && chance(deepP)) type = 'DEEP';
+                else if (h.s === (meter === 6 ? 3 : 4) && type === 'HEAVY_ACCENT' && chance(deepP * 0.4)) type = 'DEEP';
+                scheduleTaborVelocity(type, barStartTime + h.s * E, h.v * lvl * (0.9 + 0.2 * Math.random()));
+            });
             if (I > 0.6 && chance(0.3)) scheduleTaborVelocity('GHOST', barStartTime + (meter - 0.5) * E, 0.6);   // Auftakt-Ghost
         }
 
@@ -2293,11 +2325,16 @@
             // Nach einer Antwort-Kadenz lässt er den Schlusston gern ausklingen und setzt erst später wieder ein
             const restUntil = band.luteRest ? meter / 2 : 0;
             band.luteRest = false;
+            // Freiraum: Der Lautenist denkt in Melodien, nicht in Schlägen. Nach einem gehaltenen Ton lässt er
+            // gern Luft - kurz oder lang, über den Takt hinaus; spielt ein anderer, hört er auch mal eine Weile zu.
+            if (band.luteSilence <= 0 && bIdx === 0 && luteMode !== 'solo' && chance(I < 0.5 ? 0.18 : 0.08)) band.luteSilence = meter * (1 + Math.floor(Math.random() * 2));
             let p2 = 0, ringing = 0;
             line.forEach(nt => {
                 const t = barStartTime + p2 * E + (luteMode === 'hetero' ? 0.02 : 0.0);
                 const onBeat = beats.includes(p2);
-                const skip = p2 < restUntil || ringing > 0;
+                const silent = band.luteSilence > 0;
+                if (silent) band.luteSilence -= nt.dur;
+                const skip = silent || p2 < restUntil || ringing > 0;
                 if (ringing > 0) ringing--;
                 if (!skip) {
                     let note = SCALE[clampI(nt.idx, n)];
@@ -2312,6 +2349,8 @@
                     if (luteMode === 'solo' && I > 0.6 && nt.dur >= 2 && chance(0.4)) scheduleLute(SCALE[clampI(nt.idx + pick([-1, 1]), n)], t + E * (nt.dur - 1), level * 0.6 * vel);
                     // und manchmal lässt er den Ton einfach klingen und überspringt den nächsten
                     else if (luteMode !== 'unison' && !nt.cadence && chance(I < 0.5 ? 0.22 : 0.08)) ringing = 1;
+                    // nach einem gehaltenen Ton: abwägen, ob jetzt Stille besser ist als der nächste Ton
+                    if (nt.dur >= 3 && luteMode !== 'unison' && chance(luteMode === 'solo' ? 0.22 : 0.35)) band.luteSilence = pick(luteMode === 'solo' ? [1, 2, 2, 3] : [2, 3, 4, 6, meter]);
                 }
                 p2 += nt.dur;
             });
