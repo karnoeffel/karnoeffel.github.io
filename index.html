@@ -624,7 +624,7 @@
                     <textarea class="net-log" readonly style="height:140px"></textarea>
                 </details>
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
-                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 19:06</p>
+                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 19:56</p>
             </div>
         </div>
     </div>
@@ -1130,7 +1130,7 @@
 
     const TAVERN_MOODS = [
         {
-            label: 'I. Dorisch (Taverne)',
+            label: 'I. Dorisch (Taverne)', meter: 6,
             droneLow: 'D3', droneFifth: 'A3', openChan: 'D4',
             eighthSec: 0.235,
             scale: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5'],
@@ -1145,7 +1145,7 @@
             rhythms: [[2, 1, 2, 1], [1, 1, 1, 2, 1], [2, 1, 1, 1, 1], [3, 2, 1], [2, 2, 2]]
         },
         {
-            label: 'II. Phrygisch (Fehde)',
+            label: 'II. Phrygisch (Fehde)', meter: 8,
             droneLow: 'E3', droneFifth: 'B3', openChan: 'E4',
             eighthSec: 0.205,
             scale: ['D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5'],
@@ -1160,7 +1160,7 @@
             rhythms: [[2, 1, 2, 1], [1, 1, 2, 2], [2, 2, 1, 1], [1, 1, 1, 2, 1], [3, 1, 2]]
         },
         {
-            label: 'III. Mixolydisch (Tanz)',
+            label: 'III. Mixolydisch (Tanz)', meter: 6,
             droneLow: 'G2', droneFifth: 'D3', openChan: 'G4',
             eighthSec: 0.175,
             scale: ['F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5', 'G5'],
@@ -1175,7 +1175,7 @@
             rhythms: [[1, 1, 1, 2, 1], [2, 1, 1, 1, 1], [2, 1, 2, 1], [1, 1, 1, 1, 2], [2, 2, 2]]
         },
         {
-            label: 'IV. Äolisch (Nacht)',
+            label: 'IV. Äolisch (Nacht)', meter: 8,
             droneLow: 'A2', droneFifth: 'E3', openChan: 'A4',
             eighthSec: 0.295,
             scale: ['G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5', 'G5'],
@@ -1190,7 +1190,7 @@
             rhythms: [[3, 2, 1], [2, 1, 2, 1], [3, 3], [2, 2, 2], [4, 2]]
         },
         {
-            label: 'V. Lydisch (Pilger)',
+            label: 'V. Lydisch (Pilger)', meter: 6,
             droneLow: 'F2', droneFifth: 'C3', openChan: 'F4',
             eighthSec: 0.250,
             scale: ['E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5', 'F5'],
@@ -1204,7 +1204,7 @@
             rhythms: [[2, 1, 2, 1], [3, 2, 1], [2, 2, 2], [1, 1, 2, 2]]
         },
         {
-            label: 'VI. Ionisch (Hofstaat)',
+            label: 'VI. Ionisch (Hofstaat)', meter: 8,
             droneLow: 'C3', droneFifth: 'G3', openChan: 'C4',
             eighthSec: 0.195,
             scale: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5'],
@@ -1219,7 +1219,7 @@
             rhythms: [[2, 1, 2, 1], [1, 1, 1, 2, 1], [2, 1, 1, 1, 1], [2, 2, 2]]
         },
         {
-            label: 'VII. Arabesk (Kreuzzug)',
+            label: 'VII. Arabesk (Kreuzzug)', meter: 8,
             droneLow: 'D3', droneFifth: 'A3', openChan: 'D4',
             eighthSec: 0.215,
             scale: ['C4', 'D4', 'Eb4', 'F#4', 'G4', 'A4', 'Bb4', 'C5', 'D5', 'Eb5'],
@@ -1233,7 +1233,7 @@
             rhythms: [[1, 1, 1, 2, 1], [2, 1, 1, 1, 1], [2, 1, 2, 1], [3, 1, 2]]
         },
         {
-            label: 'VIII. Basso (Schankstube)',
+            label: 'VIII. Basso (Schankstube)', meter: 6,
             droneLow: 'G2', droneFifth: 'D3', openChan: 'G3',
             eighthSec: 0.265,
             scale: ['F3', 'G3', 'A3', 'Bb3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4'],
@@ -1862,111 +1862,339 @@
         src.onended = () => { src.disconnect(); g.disconnect(); };
     }
 
-    /* ---------- 2F. Kompositions-Algorithmus ---------- */
-    const VELOCITY_DRUM_GROOVES = [
-        [ { sub: 0, type: 'HEAVY_ACCENT', v: 1.0 }, { sub: 1.5, type: 'GHOST', v: 0.75 }, { sub: 2, type: 'SOFT_RIM', v: 0.88 }, { sub: 3, type: 'MED_SKIN', v: 0.94 }, { sub: 4.5, type: 'GHOST', v: 0.70 }, { sub: 5, type: 'SOFT_RIM', v: 0.82 } ],
-        [ { sub: 0, type: 'FLAM', v: 1.0 }, { sub: 2, type: 'GHOST', v: 0.78 }, { sub: 3, type: 'HEAVY_ACCENT', v: 0.90 }, { sub: 4, type: 'SOFT_RIM', v: 0.75 }, { sub: 5, type: 'MED_SKIN', v: 0.86 } ],
-        [ { sub: 0, type: 'HEAVY_ACCENT', v: 1.0 }, { sub: 1, type: 'GHOST', v: 0.70 }, { sub: 2, type: 'SOFT_RIM', v: 0.84 }, { sub: 3, type: 'MED_SKIN', v: 0.92 }, { sub: 4, type: 'GHOST', v: 0.65 }, { sub: 5, type: 'SOFT_RIM', v: 0.80 } ],
-        [ { sub: 0, type: 'MED_SKIN', v: 0.96 }, { sub: 1.5, type: 'GHOST', v: 0.68 }, { sub: 2, type: 'SOFT_RIM', v: 0.78 }, { sub: 3, type: 'FLAM', v: 0.95 }, { sub: 5, type: 'SOFT_RIM', v: 0.75 }, { sub: 5.5, type: 'GHOST', v: 0.65 } ]
-    ];
+    /* ---------- 2F. Improvisations-Engine ----------
+       Keine festen Stücke, keine Wiederholung: Ein kurzes Motiv wird fortlaufend entwickelt
+       (Sequenz, Umkehrung, Verdichtung, Fragment, Verzierung), Phrasen antworten einander als
+       Frage und Antwort, die Spannung wandert in Bögen, Besetzung und Trommel folgen ihr.
+       Die Tonart ändert sich nie von selbst.                                                   */
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    const chance = p => Math.random() < p;
+    const clampI = (i, n) => Math.max(0, Math.min(n - 1, i));
+    // Am Rand des Tonvorrats wird die Bewegung gespiegelt statt abgeschnitten - die Linie bleibt lebendig
+    const moveIdx = (idx, step, n) => { let v = idx + step; if (v < 0) v = -v; if (v > n - 1) v = 2 * (n - 1) - v; return clampI(v, n); };
 
-    let barCounter = 0;
-    let currentChordKey = 'I';
-    let lastMelodyIdx = 4;
+    const RHYTHM_CELLS = {
+        6: { calm: [[3, 3], [2, 2, 2], [2, 1, 3], [6], [4, 2]],
+             normal: [[2, 1, 2, 1], [3, 3], [2, 2, 2], [1, 1, 1, 2, 1], [3, 1, 1, 1], [2, 1, 1, 1, 1], [1, 2, 1, 2], [1, 1, 1, 3]],
+             busy: [[1, 1, 1, 1, 1, 1], [1, 1, 1, 2, 1], [2, 1, 1, 1, 1], [1, 1, 2, 1, 1], [1, 2, 1, 1, 1]],
+             cadence: [[2, 1, 3], [3, 3], [1, 1, 1, 3], [2, 4], [1, 2, 3]] },
+        8: { calm: [[4, 4], [2, 2, 4], [3, 3, 2], [8], [6, 2], [4, 2, 2]],
+             normal: [[2, 2, 2, 2], [3, 1, 2, 2], [2, 1, 1, 2, 2], [4, 2, 2], [2, 2, 1, 1, 2], [3, 3, 2], [1, 1, 2, 2, 2], [2, 1, 1, 4]],
+             busy: [[1, 1, 2, 1, 1, 2], [1, 1, 1, 1, 2, 2], [2, 1, 1, 1, 1, 2], [1, 1, 1, 1, 1, 1, 2], [1, 2, 1, 1, 2, 1]],
+             cadence: [[2, 2, 4], [3, 1, 4], [2, 1, 1, 4], [4, 4], [1, 1, 2, 4]] }
+    };
+    const DRUM_PATTERNS = {
+        6: {
+            sparse: [[{ s: 0, t: 'HEAVY_ACCENT', v: 0.95 }, { s: 3, t: 'SOFT_RIM', v: 0.7 }], [{ s: 0, t: 'MED_SKIN', v: 0.9 }, { s: 4, t: 'GHOST', v: 0.6 }], [{ s: 0, t: 'HEAVY_ACCENT', v: 0.9 }]],
+            medium: [[{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 2, t: 'GHOST', v: 0.6 }, { s: 3, t: 'MED_SKIN', v: 0.85 }, { s: 5, t: 'GHOST', v: 0.6 }],
+                     [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 1.5, t: 'GHOST', v: 0.55 }, { s: 3, t: 'SOFT_RIM', v: 0.8 }, { s: 4, t: 'GHOST', v: 0.6 }],
+                     [{ s: 0, t: 'MED_SKIN', v: 0.95 }, { s: 2, t: 'SOFT_RIM', v: 0.7 }, { s: 3, t: 'HEAVY_ACCENT', v: 0.9 }, { s: 5, t: 'SOFT_RIM', v: 0.7 }]],
+            full: [[{ s: 0, t: 'FLAM', v: 1 }, { s: 1, t: 'GHOST', v: 0.6 }, { s: 2, t: 'SOFT_RIM', v: 0.75 }, { s: 3, t: 'MED_SKIN', v: 0.9 }, { s: 4, t: 'GHOST', v: 0.6 }, { s: 5, t: 'SOFT_RIM', v: 0.75 }],
+                   [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 1, t: 'GHOST', v: 0.55 }, { s: 2, t: 'GHOST', v: 0.55 }, { s: 3, t: 'HEAVY_ACCENT', v: 0.9 }, { s: 4.5, t: 'GHOST', v: 0.55 }, { s: 5, t: 'SOFT_RIM', v: 0.8 }],
+                   [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 1, t: 'SOFT_RIM', v: 0.7 }, { s: 2, t: 'GHOST', v: 0.6 }, { s: 3, t: 'FLAM', v: 0.95 }, { s: 5, t: 'MED_SKIN', v: 0.8 }]],
+            fill: [[{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 1, t: 'SOFT_RIM', v: 0.7 }, { s: 2, t: 'SOFT_RIM', v: 0.8 }, { s: 3, t: 'MED_SKIN', v: 0.85 }, { s: 4, t: 'MED_SKIN', v: 0.95 }, { s: 5, t: 'HEAVY_ACCENT', v: 1.05 }],
+                   [{ s: 0, t: 'FLAM', v: 1 }, { s: 2, t: 'GHOST', v: 0.6 }, { s: 3, t: 'FLAM', v: 1 }, { s: 5, t: 'GHOST', v: 0.6 }],
+                   [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 2, t: 'MED_SKIN', v: 0.8 }, { s: 3, t: 'GHOST', v: 0.6 }, { s: 4, t: 'SOFT_RIM', v: 0.8 }, { s: 5, t: 'FLAM', v: 1 }]],
+            close: [[{ s: 0, t: 'FLAM', v: 1.05 }, { s: 3, t: 'HEAVY_ACCENT', v: 0.9 }], [{ s: 0, t: 'HEAVY_ACCENT', v: 1.05 }]],
+            solo: [[{ s: 0, t: 'FLAM', v: 1 }, { s: 1, t: 'GHOST', v: 0.6 }, { s: 2, t: 'MED_SKIN', v: 0.9 }, { s: 3, t: 'SOFT_RIM', v: 0.7 }, { s: 4, t: 'HEAVY_ACCENT', v: 1 }, { s: 5, t: 'GHOST', v: 0.6 }],
+                   [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 1.5, t: 'SOFT_RIM', v: 0.7 }, { s: 2, t: 'GHOST', v: 0.6 }, { s: 3, t: 'FLAM', v: 1 }, { s: 4, t: 'MED_SKIN', v: 0.85 }, { s: 5, t: 'MED_SKIN', v: 0.9 }]]
+        },
+        8: {
+            sparse: [[{ s: 0, t: 'HEAVY_ACCENT', v: 0.95 }, { s: 4, t: 'MED_SKIN', v: 0.8 }], [{ s: 0, t: 'HEAVY_ACCENT', v: 0.95 }, { s: 4, t: 'SOFT_RIM', v: 0.7 }, { s: 6, t: 'GHOST', v: 0.55 }], [{ s: 0, t: 'MED_SKIN', v: 0.9 }]],
+            medium: [[{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 2, t: 'SOFT_RIM', v: 0.7 }, { s: 4, t: 'MED_SKIN', v: 0.9 }, { s: 6, t: 'SOFT_RIM', v: 0.7 }, { s: 7, t: 'GHOST', v: 0.55 }],
+                     [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 3, t: 'GHOST', v: 0.6 }, { s: 4, t: 'MED_SKIN', v: 0.9 }, { s: 6, t: 'GHOST', v: 0.6 }],
+                     [{ s: 0, t: 'MED_SKIN', v: 0.95 }, { s: 2, t: 'GHOST', v: 0.55 }, { s: 4, t: 'HEAVY_ACCENT', v: 0.95 }, { s: 5, t: 'GHOST', v: 0.55 }, { s: 6, t: 'SOFT_RIM', v: 0.7 }]],
+            full: [[{ s: 0, t: 'FLAM', v: 1 }, { s: 1, t: 'GHOST', v: 0.6 }, { s: 2, t: 'SOFT_RIM', v: 0.75 }, { s: 3, t: 'GHOST', v: 0.6 }, { s: 4, t: 'MED_SKIN', v: 0.9 }, { s: 5, t: 'GHOST', v: 0.6 }, { s: 6, t: 'SOFT_RIM', v: 0.75 }, { s: 7, t: 'GHOST', v: 0.6 }],
+                   [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 2, t: 'GHOST', v: 0.55 }, { s: 3, t: 'SOFT_RIM', v: 0.75 }, { s: 4, t: 'HEAVY_ACCENT', v: 0.9 }, { s: 6, t: 'SOFT_RIM', v: 0.75 }, { s: 7, t: 'GHOST', v: 0.6 }],
+                   [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 1.5, t: 'GHOST', v: 0.55 }, { s: 2, t: 'SOFT_RIM', v: 0.7 }, { s: 4, t: 'FLAM', v: 0.95 }, { s: 6, t: 'MED_SKIN', v: 0.8 }, { s: 7, t: 'GHOST', v: 0.6 }]],
+            fill: [[{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 2, t: 'SOFT_RIM', v: 0.7 }, { s: 4, t: 'SOFT_RIM', v: 0.8 }, { s: 5, t: 'MED_SKIN', v: 0.85 }, { s: 6, t: 'MED_SKIN', v: 0.95 }, { s: 7, t: 'HEAVY_ACCENT', v: 1.05 }],
+                   [{ s: 0, t: 'FLAM', v: 1 }, { s: 2, t: 'GHOST', v: 0.6 }, { s: 4, t: 'FLAM', v: 1 }, { s: 6, t: 'SOFT_RIM', v: 0.8 }, { s: 7, t: 'GHOST', v: 0.6 }],
+                   [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 3, t: 'MED_SKIN', v: 0.8 }, { s: 4, t: 'GHOST', v: 0.6 }, { s: 5, t: 'SOFT_RIM', v: 0.8 }, { s: 6, t: 'SOFT_RIM', v: 0.9 }, { s: 7, t: 'FLAM', v: 1 }]],
+            close: [[{ s: 0, t: 'FLAM', v: 1.05 }, { s: 4, t: 'HEAVY_ACCENT', v: 0.9 }], [{ s: 0, t: 'HEAVY_ACCENT', v: 1.05 }]],
+            solo: [[{ s: 0, t: 'FLAM', v: 1 }, { s: 1, t: 'GHOST', v: 0.6 }, { s: 2, t: 'MED_SKIN', v: 0.9 }, { s: 3, t: 'SOFT_RIM', v: 0.7 }, { s: 4, t: 'HEAVY_ACCENT', v: 1 }, { s: 5, t: 'GHOST', v: 0.6 }, { s: 6, t: 'MED_SKIN', v: 0.85 }, { s: 7, t: 'SOFT_RIM', v: 0.7 }],
+                   [{ s: 0, t: 'HEAVY_ACCENT', v: 1 }, { s: 1.5, t: 'SOFT_RIM', v: 0.7 }, { s: 2, t: 'GHOST', v: 0.6 }, { s: 3, t: 'FLAM', v: 1 }, { s: 5, t: 'MED_SKIN', v: 0.85 }, { s: 6, t: 'GHOST', v: 0.6 }, { s: 7, t: 'MED_SKIN', v: 0.9 }]]
+        }
+    };
 
+    // ---- Zustand der Band ----
+    const band = {
+        motif: null, motifAge: 0, oldMotifs: [],
+        phrase: null, barInPhrase: 0, phraseNo: 0, role: 'question',
+        intensity: 0.35, arcDir: 1, arcLeft: 6,
+        texture: 'hg', textureLeft: 2,
+        lastEnd: null, lastBarDrum: null, cursor: null
+    };
+    function bandReset() { band.motif = null; band.phrase = null; band.barInPhrase = 0; band.phraseNo = 0; band.texture = 'hg'; band.textureLeft = 2; band.intensity = 0.35; band.arcDir = 1; band.arcLeft = 6; band.cursor = null; }
+
+    // Ein Motiv: 3-5 Schritte (Intervalle in Skalenstufen) mit Dauern - das Gedächtnis der Band
+    function newMotif() {
+        const len = pick([3, 3, 4, 4, 5]);
+        const steps = [], durs = [];
+        for (let i = 0; i < len; i++) { steps.push(pick([-2, -1, -1, 0, 1, 1, 2, 1, -1])); durs.push(pick([1, 1, 2, 2, 1, 3])); }
+        return { steps, durs };
+    }
+    function mutateMotif(m) {
+        const r = { steps: m.steps.slice(), durs: m.durs.slice() };
+        const k = Math.floor(Math.random() * r.steps.length);
+        const what = pick(['step', 'dur', 'invert', 'retro', 'extend', 'shrink']);
+        if (what === 'step') r.steps[k] = pick([-2, -1, 0, 1, 2]);
+        else if (what === 'dur') r.durs[k] = pick([1, 1, 2, 2, 3]);
+        else if (what === 'invert') r.steps = r.steps.map(s => -s);
+        else if (what === 'retro') { r.steps.reverse(); r.durs.reverse(); }
+        else if (what === 'extend' && r.steps.length < 6) { r.steps.push(pick([-1, 1])); r.durs.push(pick([1, 2])); }
+        else if (what === 'shrink' && r.steps.length > 3) { r.steps.pop(); r.durs.pop(); }
+        return r;
+    }
+
+    // Das Motiv in einen Takt gießen: ab Startstufe, mit Transformation; Dauern an den Takt angepasst
+    function renderMotif(m, startIdx, n, meter, transform, density, center) {
+        let steps = m.steps.slice(), durs = m.durs.slice();
+        if (transform === 'invert') steps = steps.map(s => -s);
+        if (transform === 'retro') { steps = steps.slice().reverse(); durs = durs.slice().reverse(); }
+        if (transform === 'augment') durs = durs.map(d => Math.min(4, d + 1));
+        if (transform === 'diminish') durs = durs.map(d => Math.max(1, d - 1));
+        if (transform === 'fragment') { steps = steps.slice(0, 2); durs = durs.slice(0, 2); }
+        // Takt füllen: Motiv wiederholen (Fragmentsequenz) bis der Takt voll ist, Rest = Haltenote
+        const notes = []; let idx = startIdx, used = 0, i = 0, guard = 0;
+        const wobble = chance(0.35) ? Math.floor(Math.random() * steps.length) : -1;   // ein Ton weicht ab: nie zweimal dieselbe Lesart
+        while (used < meter && guard++ < 24) {
+            const s = (i % steps.length === wobble) ? pick([-1, 0, 1]) : steps[i % steps.length], d = Math.min(durs[i % durs.length], meter - used);
+            if (i > 0 && i % steps.length === 0) idx = moveIdx(idx, transform === 'sequenceDown' ? -1 : 1, n);   // Sequenz
+            idx = moveIdx(idx, s, n);
+            if (idx < center - 2 && chance(0.5)) idx = moveIdx(idx, 1, n);          // sanfter Zug zur Mittellage
+            if (idx > center + 3 && chance(0.5)) idx = moveIdx(idx, -1, n);
+            notes.push({ idx, dur: d }); used += d; i++;
+        }
+        // Dichte: bei hoher Spannung lange Töne teilen, bei niedriger zusammenziehen
+        if (density > 0.7) return notes.flatMap(x => (x.dur >= 3 && chance(0.5)) ? [{ idx: x.idx, dur: x.dur - 1 }, { idx: clampI(x.idx + pick([-1, 1]), n), dur: 1 }] : [x]);
+        if (density < 0.3 && notes.length > 2) { const merged = []; for (const x of notes) { if (merged.length && chance(0.4)) merged[merged.length - 1].dur += x.dur; else merged.push({ ...x }); } return merged; }
+        return notes;
+    }
+
+    // Eine Phrase (4 Takte): Aussage - Weiterführung - Steigerung - Kadenz. Frage endet offen, Antwort auf dem Grundton.
+    function makePhrase(mood, meter, role, intensity, startIdx) {
+        const S = mood.scale, n = S.length, tonic = mood.tonicIdx, fifth = mood.fifthIdx;
+        if (!band.motif) band.motif = newMotif();
+        const m = band.motif;
+        const reg = intensity > 0.65 && n > 8 ? 1 : 0;
+        const transforms = [['plain', 'sequence'], ['sequence', 'invert', 'retro', 'augment'], ['fragment', 'sequence', 'diminish', 'sequenceDown']];
+        const bars = [];
+        let idx = startIdx !== null ? startIdx : clampI(tonic + reg + pick([0, 0, 2, 4]), n);
+        for (let b = 0; b < 3; b++) {
+            const tr = pick(transforms[b]);
+            const bar = renderMotif(m, idx, n, meter, tr, intensity, tonic + reg + 2);
+            // Steigerungstakt zieht nach oben, Weiterführung bleibt in der Lage
+            if (b === 2) bar.forEach((x, k) => { x.idx = clampI(x.idx + (k < bar.length / 2 ? 1 : 0), n); });
+            bars.push(bar); idx = bar[bar.length - 1].idx;
+        }
+        // Kadenztakt
+        const cell = pick(RHYTHM_CELLS[meter].cadence);
+        const cad = [];
+        const target = role === 'answer' ? clampI(tonic + reg, n) : (chance(0.75) ? clampI(fifth + reg - (reg ? 7 : 0), n) : clampI(tonic + reg + 1, n));
+        const approach = clampI(target + (chance(0.5) ? (idx > target ? 1 : -1) : pick([-1, 1])), n);
+        let cur = idx;
+        cell.forEach((d, k) => {
+            const L = cell.length;
+            let v;
+            if (k === L - 1) v = target;
+            else if (k === L - 2) v = approach;
+            else { cur = clampI(cur + (cur > approach ? -1 : cur < approach ? 1 : pick([-1, 1])), n); v = cur; }
+            cad.push({ idx: v, dur: d, cadence: k === L - 1 });
+        });
+        bars.push(cad);
+        return { bars, endIdx: target };
+    }
+
+    // Heterophonie der Laute: gleiche Linie, eigene Lesart
+    function heterophony(notes, n) {
+        const out = [];
+        notes.forEach(nt => {
+            if (nt.dur >= 3 && chance(0.5) && !nt.cadence) { out.push({ idx: nt.idx, dur: nt.dur - 1 }); out.push({ idx: clampI(nt.idx + pick([-1, 1]), n), dur: 1 }); }
+            else if (nt.dur === 2 && chance(0.3) && !nt.cadence) { out.push({ idx: nt.idx, dur: 1 }); out.push({ idx: clampI(nt.idx + pick([0, 1, -1]), n), dur: 1 }); }
+            else out.push({ ...nt });
+        });
+        return out;
+    }
+
+    // Spannungsbogen und Besetzung fortschreiben (einmal je Phrase)
+    function advanceForm() {
+        band.phraseNo++;
+        band.arcLeft--;
+        band.intensity = Math.max(0.15, Math.min(1, band.intensity + band.arcDir * (0.08 + Math.random() * 0.1)));
+        if (band.arcLeft <= 0) { band.arcDir = band.intensity > 0.6 ? -1 : (band.intensity < 0.35 ? 1 : pick([-1, 1])); band.arcLeft = 3 + Math.floor(Math.random() * 5); }
+        // Motiv entwickeln: oft leicht, selten ganz neu, manchmal Erinnerung an ein früheres
+        band.motifAge++;
+        if (band.motifAge > 5 + Math.floor(Math.random() * 5)) {
+            if (band.oldMotifs.length && chance(0.3)) band.motif = mutateMotif(pick(band.oldMotifs));
+            else { band.oldMotifs.push(band.motif); if (band.oldMotifs.length > 6) band.oldMotifs.shift(); band.motif = newMotif(); }
+            band.motifAge = 0;
+        } else if (chance(0.5)) band.motif = mutateMotif(band.motif);
+        // Besetzung
+        band.textureLeft--;
+        if (band.textureLeft <= 0) {
+            const I = band.intensity;
+            const base = I > 0.7 ? ['tutti', 'tutti', 'duet', 'drumsolo'] : I > 0.4 ? ['duet', 'hg', 'lute', 'call'] : ['hg', 'lute', 'duet', 'hg'];
+            const options = base.filter(o => !piece || piece.textures.includes(o)).concat(piece ? piece.textures : []);
+            let next = pick(options.filter(o => o !== band.texture)) || 'hg';
+            band.texture = next;
+            band.textureLeft = next === 'drumsolo' ? 1 : 2 + Math.floor(Math.random() * 3);
+        }
+    }
+
+    /* ---------- Die Stücke des Abends ----------
+       Jedes Stück hat eigenen Charakter (Typ, Tempo, Takt, Motivfamilie, Spannungsprofil, Länge),
+       einen Schluss mit Ritardando und Schlussschlag, danach eine Pause: Die Drehleier kommt zur Ruhe,
+       die Laute stimmt an, das Rad läuft wieder an - und das nächste Stück beginnt. Die Tonart bleibt. */
+    const PIECE_TYPES = {
+        estampie:   { tempo: [0.95, 1.05], meter: null, bars: [56, 80], imin: 0.25, imax: 1.0,  textures: ['hg', 'duet', 'lute', 'call', 'tutti'], drumsIntro: true },
+        saltarello: { tempo: [0.78, 0.88], meter: 6,    bars: [48, 72], imin: 0.45, imax: 1.0,  textures: ['tutti', 'duet', 'hg', 'drumsolo', 'call'], drumsIntro: true },
+        ductia:     { tempo: [0.85, 0.95], meter: 8,    bars: [40, 64], imin: 0.35, imax: 0.95, textures: ['hg', 'tutti', 'duet', 'drumsolo'], drumsIntro: true },
+        lamento:    { tempo: [1.35, 1.6],  meter: null, bars: [28, 44], imin: 0.15, imax: 0.55, textures: ['hg', 'lute', 'duet'], drumsIntro: false },
+        rotta:      { tempo: [1.0, 1.15],  meter: null, bars: [40, 60], imin: 0.25, imax: 0.8,  textures: ['lute', 'duet', 'call', 'lute'], drumsIntro: false }
+    };
+    let piece = null;
+    let lastPieceType = null;
+    function newPiece() {
+        const mood = TAVERN_MOODS[currentMoodIdx];
+        const names = Object.keys(PIECE_TYPES).filter(k => k !== lastPieceType);
+        const type = pick(names); lastPieceType = type;
+        const P = PIECE_TYPES[type];
+        const tempo = P.tempo[0] + Math.random() * (P.tempo[1] - P.tempo[0]);
+        piece = {
+            type, meter: P.meter || mood.meter, eighth: mood.eighthSec * tempo,
+            total: P.bars[0] + Math.floor(Math.random() * (P.bars[1] - P.bars[0])), played: 0,
+            imin: P.imin, imax: P.imax, textures: P.textures, drumsIntro: P.drumsIntro, phase: 'intro', introLeft: P.drumsIntro ? 2 : 1
+        };
+        bandReset();
+        band.intensity = P.imin + 0.1; band.arcDir = 1;
+        band.texture = type === 'rotta' || type === 'lamento' ? 'lute' : 'hg';
+        band.textureLeft = 2;
+    }
+    function scheduleTuning(t) {
+        // Die Laute stimmt an: Grundton, Quinte, Oktave - leise, unregelmäßig
+        const mood = TAVERN_MOODS[currentMoodIdx];
+        const tonic = mood.scale[mood.tonicIdx], fifth = mood.scale[mood.fifthIdx];
+        const low = tonic.replace(/\d/, d => String(+d - 1));
+        [[FREQS[low] ? low : tonic, 0], [fifth, 0.55 + Math.random() * 0.3], [tonic, 1.2 + Math.random() * 0.4]].forEach(([nn, dt]) => scheduleLute(nn, t + dt, 0.22));
+    }
     function composeAndScheduleNextBar(barStartTime) {
         const mood = TAVERN_MOODS[currentMoodIdx];
-        const SCALE = mood.scale;
-        const EIGHTH = mood.eighthSec;
-        const barInPhrase = barCounter % 8;
+        const SCALE = mood.scale, n = SCALE.length;
+        if (!piece) newPiece();
+        const meter = piece.meter, EIGHTH = piece.eighth;
 
-        // Mit laufendem Bordun nur Akkorde, die Grundton oder Quinte des Borduns enthalten (sonst reibt es)
-        const droneOn = instEnabled.hg;
-        const pc = n => n.replace(/[0-9]/g, '');
-        const dronePCs = [pc(mood.droneLow), pc(mood.droneFifth)];
-        const fitsDrone = key => { const c = mood.chords[key]; return [c.bass, c.fifth, c.third].some(n => dronePCs.includes(pc(n))); };
-        const allowed = key => !droneOn || fitsDrone(key);
-        if (barInPhrase === 0 || barInPhrase === 4 || barInPhrase === 7) {
-            currentChordKey = 'I';
-        } else if (barInPhrase === 3) {
-            const cadences = Object.keys(mood.chords).filter(k => k !== 'I' && allowed(k));
-            currentChordKey = cadences.length ? cadences[Math.floor(Math.random() * cadences.length)] : 'I';
-        } else {
-            const curObj = mood.chords[currentChordKey] || mood.chords['I'];
-            const nexts = curObj.next.filter(allowed);
-            currentChordKey = nexts.length ? nexts[Math.floor(Math.random() * nexts.length)] : 'I';
+        // ---- Pause zwischen zwei Stücken: Rad kommt zur Ruhe, Laute stimmt an, Rad läuft wieder an ----
+        if (piece.phase === 'pause') {
+            const gap = 4 + Math.random() * 4;
+            if (hgWheel && instEnabled.hg) {
+                hgWheel.master.gain.cancelScheduledValues(barStartTime);
+                hgWheel.master.gain.setTargetAtTime(0.0001, barStartTime, 0.6);
+                hgWheel.master.gain.setValueAtTime(0.0001, barStartTime + gap - 1.5);
+                hgWheel.master.gain.exponentialRampToValueAtTime(0.7, barStartTime + gap);
+            }
+            if (instEnabled.lute) scheduleTuning(barStartTime + gap * 0.45);
+            newPiece();
+            return gap;
         }
-        const chord = mood.chords[currentChordKey] || mood.chords['I'];
+        // ---- Vorspiel: Bordun (und Trommel) finden zusammen ----
+        if (piece.phase === 'intro') {
+            if (piece.drumsIntro && instEnabled.drum) pick(DRUM_PATTERNS[meter].sparse).forEach(h => scheduleTaborVelocity(h.t, barStartTime + h.s * EIGHTH, h.v * 0.8));
+            if (hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime, 0.1);
+            if (--piece.introLeft <= 0) piece.phase = 'body';
+            return meter * EIGHTH;
+        }
+        // ---- Schluss: letzte Phrase wird Antwort, letzter Takt gedehnt, dann Pause ----
+        piece.played++;
+        const ending = piece.played >= piece.total - 4;
+        if (ending && band.barInPhrase === 0 && piece.phase === 'body') piece.phase = 'ending';
+        const finalBar = piece.phase === 'ending' && band.barInPhrase === 3;
 
-        const cell = (barInPhrase === 7) ? [3, 3] : mood.rhythms[Math.floor(Math.random() * mood.rhythms.length)];
+        if (band.barInPhrase === 0) {
+            if (band.phrase) advanceForm();
+            band.role = (band.phraseNo % 2 === 0) ? 'question' : 'answer';
+            if (band.role === 'answer' && chance(0.15)) band.role = 'question';          // auch mal zwei Fragen
+            if (piece.phase === 'ending') band.role = 'answer';
+            band.intensity = Math.max(piece.imin, Math.min(piece.imax, band.intensity));
+            band.phrase = makePhrase(mood, meter, band.role, band.intensity, band.cursor);
+            band.cursor = chance(0.6) ? band.phrase.endIdx : null;
+        }
+        const bIdx = band.barInPhrase;
+        const melody = band.phrase.bars[bIdx];
+        const isCadence = bIdx === 3;
+        const I = band.intensity;
+        const tex = band.texture;
+        // Kadenztakte atmen: minimal breiter; der Schlusstakt des Stücks deutlich (Ritardando)
+        const stretch = finalBar ? 1.3 : (isCadence && band.role === 'answer' ? 1.05 : 1.0);
+        const E = EIGHTH * stretch;
+        const barLen = meter * E;
 
+        // ---- Trommel: Dichte nach Spannung, Fills an Phrasenenden, Trommelsolo ----
         if (instEnabled.drum) {
-            const groove = (barInPhrase === 7)
-                ? [ { sub: 0, type: 'FLAM', v: 1.05 }, { sub: 2, type: 'GHOST', v: 0.70 }, { sub: 3, type: 'HEAVY_ACCENT', v: 0.95 } ]
-                : VELOCITY_DRUM_GROOVES[Math.floor(Math.random() * VELOCITY_DRUM_GROOVES.length)];
-            groove.forEach(hit => scheduleTaborVelocity(hit.type, barStartTime + hit.sub * EIGHTH, hit.v));
+            let kind = I < 0.3 ? 'sparse' : I < 0.65 ? 'medium' : 'full';
+            if (tex === 'drumsolo') kind = 'solo';
+            else if (isCadence && chance(0.8)) kind = 'fill';
+            if (piece.type === 'lamento' && piece.played < piece.total * 0.4) kind = chance(0.5) ? 'sparse' : null;
+            if (finalBar) kind = 'close';
+            if (tex === 'lute' && I < 0.5) kind = 'sparse';
+            let pat = kind ? pick(DRUM_PATTERNS[meter][kind]) : [];
+            if (band.lastBarDrum === pat && DRUM_PATTERNS[meter][kind].length > 1) pat = pick(DRUM_PATTERNS[meter][kind].filter(p => p !== pat));
+            band.lastBarDrum = pat;
+            const lvl = (tex === 'drumsolo' ? 1.15 : tex === 'lute' ? 0.75 : 0.85 + 0.25 * I);
+            pat.forEach(h => { if (!(h.t === 'GHOST' && chance(0.25))) scheduleTaborVelocity(h.t, barStartTime + h.s * E, h.v * lvl); });
+            if (I > 0.6 && chance(0.3)) scheduleTaborVelocity('GHOST', barStartTime + (meter - 0.5) * E, 0.6);   // Auftakt-Ghost
         }
 
-        if (instEnabled.lute) {
-            // Mittelalterlicher Satz: oft offene Quinte mit Oktave statt Terz
-            const octaveUp = chord.bass.replace(/\d/, d => String(+d + 1));
-            const useOpenFifth = (currentChordKey === 'I' && Math.random() < 0.6) || (droneOn && Math.random() < 0.35);
-            const voicing = (useOpenFifth && FREQS[octaveUp]) ? [chord.bass, chord.fifth, octaveUp] : [chord.bass, chord.fifth, chord.third];
-            scheduleLuteChord(voicing, barStartTime, 0.46);
-            if (barInPhrase !== 7) scheduleLute(chord.fifth, barStartTime + 3 * EIGHTH, 0.36);
-        }
+        // ---- Wer spielt die Linie? ----
+        const hgPlays = tex === 'hg' || tex === 'duet' || tex === 'tutti' || (tex === 'call' && bIdx < 2);
+        const lutePlays = tex === 'lute' || tex === 'duet' || tex === 'tutti' || (tex === 'call' && bIdx >= 2);
+        const luteMode = tex === 'tutti' ? 'unison' : (tex === 'duet' ? 'hetero' : 'solo');
+        if (instEnabled.hg && hgWheel && !hgPlays) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime, 0.12);
+        if (tex === 'drumsolo') { if (hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime, 0.1); band.barInPhrase = (bIdx + 1) % 4; return barLen; }
 
-        let subPos = 0;
-        cell.forEach((durEighths, noteOrder) => {
-            const noteTime = barStartTime + subPos * EIGHTH;
-            const noteDurSec = durEighths * EIGHTH;
-            const isMainBeat = (subPos === 0 || subPos === 3);
-
-            if (barInPhrase === 7 && subPos >= 3) {
-                if (instEnabled.hg && hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.05, noteTime, 0.08);
-                subPos += durEighths;
-                return;
+        const beats = meter === 6 ? [0, 3] : [0, 4];
+        let pos = 0;
+        melody.forEach(nt => {
+            const t = barStartTime + pos * E, durSec = nt.dur * E, onBeat = beats.includes(pos);
+            const note = SCALE[clampI(nt.idx, n)], upper = SCALE[clampI(nt.idx + 1, n)];
+            if (hgPlays && instEnabled.hg) {
+                const orn = ((nt.dur >= 3 && chance(0.45 + 0.3 * I)) || (nt.cadence && chance(0.7))) ? upper : null;
+                scheduleHurdyGurdyKeyAction(note, t, durSec, onBeat || (I > 0.7 && chance(0.3)), orn);
             }
-
-            if (barInPhrase === 7 && subPos === 0) {
-                lastMelodyIdx = mood.tonicIdx;
-            } else if (barInPhrase === 3 && subPos >= 3) {
-                lastMelodyIdx = mood.fifthIdx;
-            } else {
-                const steps = [-1, 1, -1, 1, -1, 1, -2, 2, 0];
-                const step = steps[Math.floor(Math.random() * steps.length)];
-                lastMelodyIdx = Math.max(0, Math.min(SCALE.length - 1, lastMelodyIdx + step));
-                if (isMainBeat && Math.random() < 0.75 && !chord.arpIdx.includes(lastMelodyIdx)) {
-                    lastMelodyIdx = chord.arpIdx.reduce((a, b) => Math.abs(b - lastMelodyIdx) < Math.abs(a - lastMelodyIdx) ? b : a);
-                }
-            }
-
-            const melNote = SCALE[lastMelodyIdx] || SCALE[0];
-            const upperNeighbor = SCALE[Math.min(SCALE.length - 1, lastMelodyIdx + 1)];
-
-            if (instEnabled.hg) {
-                const isCrankCoup = (subPos === 0) || (subPos === 3 && Math.random() < 0.65);
-                const useOrnament = (durEighths >= 2 && Math.random() < 0.45) ? upperNeighbor : null;
-                scheduleHurdyGurdyKeyAction(melNote, noteTime, noteDurSec, isCrankCoup, useOrnament);
-            }
-
-            if (instEnabled.lute) {
-                if (durEighths === 1 && noteOrder % 2 === 1 && Math.random() < 0.45) {
-                    // kurze Atempause bei schnellen Achtelläufen
-                } else {
-                    let luteTargetNote = melNote;
-                    if (instEnabled.hg && !isMainBeat && Math.random() < 0.45) {
-                        const harmOffset = (lastMelodyIdx >= 3) ? -2 : 2;
-                        luteTargetNote = SCALE[Math.max(0, Math.min(SCALE.length - 1, lastMelodyIdx + harmOffset))];
-                    }
-                    scheduleLute(luteTargetNote, noteTime + 0.012, isMainBeat ? 0.50 : 0.38);
-                }
-            }
-            subPos += durEighths;
+            pos += nt.dur;
         });
 
-        barCounter++;
-        return 6 * EIGHTH;
+        if (lutePlays && instEnabled.lute) {
+            const line = luteMode === 'hetero' ? heterophony(melody, n) : melody;
+            const level = luteMode === 'solo' ? 0.5 : (luteMode === 'unison' ? 0.42 : 0.34);
+            let p2 = 0;
+            line.forEach(nt => {
+                const t = barStartTime + p2 * E + (luteMode === 'hetero' ? 0.02 : 0.006);
+                const onBeat = beats.includes(p2);
+                let note = SCALE[clampI(nt.idx, n)];
+                if (luteMode === 'solo' && chance(0.18)) { const low = note.replace(/\d/, d => String(+d - 1)); if (FREQS[low]) note = low; }
+                scheduleLute(note, t, onBeat ? level : level * 0.78);
+                if (luteMode === 'solo' && nt.dur >= 3 && chance(0.7)) {
+                    const bass = SCALE[mood.tonicIdx].replace(/\d/, d => String(+d - 1));
+                    if (FREQS[bass]) scheduleLute(bass, t + 0.03, level * 0.5);
+                }
+                // Diminution im Solo bei hoher Spannung: Zwischentöne
+                if (luteMode === 'solo' && I > 0.6 && nt.dur >= 2 && chance(0.4)) scheduleLute(SCALE[clampI(nt.idx + pick([-1, 1]), n)], t + E * (nt.dur - 1), level * 0.6);
+                p2 += nt.dur;
+            });
+        }
+        // Atempause: nach einer Antwort-Kadenz schweigt die Linie gelegentlich kurz (Trommel trägt)
+        if (isCadence && band.role === 'answer' && chance(0.35) && hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.05, barStartTime + barLen * 0.75, 0.15);
+
+        if (finalBar) {
+            // Schlusston: Laute setzt Grundton mit Oktave, Drehleier hält und verklingt
+            if (instEnabled.lute) { const tonic = SCALE[mood.tonicIdx]; const low = tonic.replace(/\d/, d => String(+d - 1)); scheduleLute(FREQS[low] ? low : tonic, barStartTime + barLen - E * 2, 0.5); scheduleLute(tonic, barStartTime + barLen - E * 2 + 0.04, 0.4); }
+            if (hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime + barLen + 0.8, 0.5);
+            piece.phase = 'pause';
+            band.barInPhrase = 0;
+            return barLen + 1.2;
+        }
+        band.barInPhrase = (bIdx + 1) % 4;
+        return barLen;
     }
 
     function scheduleAhead() {
@@ -1998,6 +2226,7 @@
             btn.innerText = T('music_on');
             btn.classList.add('playing');
             updateHurdyWheelState();
+            piece = null; bandReset();
             nextNoteTime = audioCtx.currentTime + 0.06;
             if (!schedulerInterval) { scheduleAhead(); schedulerInterval = setInterval(scheduleAhead, 80); }
         } else {
@@ -2013,8 +2242,7 @@
         currentMoodIdx = (currentMoodIdx + 1) % TAVERN_MOODS.length;
         const mood = TAVERN_MOODS[currentMoodIdx];
         document.getElementById('mood-toggle').innerText = T('moods')[currentMoodIdx];
-        currentChordKey = 'I';
-        lastMelodyIdx = mood.tonicIdx;
+        piece = null; bandReset();
         if (isMusicPlaying && instEnabled.hg) updateHurdyWheelState();
     }
 
