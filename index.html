@@ -624,7 +624,7 @@
                     <textarea class="net-log" readonly style="height:140px"></textarea>
                 </details>
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
-                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 18:58</p>
+                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 19:06</p>
             </div>
         </div>
     </div>
@@ -1258,11 +1258,11 @@
     // Browser erlauben Klang erst nach einer Nutzer-Geste: erster Klick/Tastendruck startet die Engine
     ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, ensureAudioReady, { once: true }));
 
-    function playCardThrowSound(playerIdx = 0) {
+    function playCardThrowSound(playerIdx = 0, strength = 1.0) {
         if (!audioCtx || !sfxBus || audioCtx.state !== 'running') return;
         const now = audioCtx.currentTime;
         const sr = audioCtx.sampleRate;
-        const velocity = 0.60 + Math.random() * 0.55;
+        const velocity = (0.60 + Math.random() * 0.55) * strength;
         const pitchVar = 0.85 + Math.random() * 0.30;
         const slideLen = 0.045 + Math.random() * 0.045;
         const totalDur = 0.13;
@@ -1336,8 +1336,8 @@
 
     function playDealRustleSound() {
         if (!audioCtx || !sfxBus) return;
-        for (let k = 0; k < 5; k++) {
-            setTimeout(() => { if (audioCtx && sfxBus) playCardThrowSound(k % 4); }, k * 65);
+        for (let k = 0; k < 4; k++) {
+            setTimeout(() => { if (audioCtx && sfxBus) playCardThrowSound(k, 0.5); }, k * 110 + Math.random() * 40);
         }
     }
 
@@ -1773,7 +1773,8 @@
         comp.connect(audioCtx.destination);
 
         masterGain = audioCtx.createGain();
-        masterGain.gain.value = 0.85;
+        masterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+        masterGain.gain.exponentialRampToValueAtTime(0.85, audioCtx.currentTime + 0.25);   // kein Knacks beim Einschalten
         masterGain.connect(comp);
 
         cellarReverb = createDeepCellarVaultReverb(audioCtx);
@@ -2163,9 +2164,9 @@
             return {
                 you: seat,
                 seats: this.seats.map(s => ({ name: s.name, kind: s.kind, connected: s.kind !== 'remote' || !!s.connected })),
-                hand, counts: this.hands.map(h => h.length),
+                hand: hand.slice(), counts: this.hands.map(h => h.length),
                 trump: this.trumpSuit, trumpCard: this.trumpCard,
-                faceUps: this.faceUps, trick: this.trick, turn: this.turn, phase: this.phase,
+                faceUps: this.faceUps.slice(), trick: this.trick.slice(), turn: this.turn, phase: this.phase,
                 roundTricks: this.roundTricks, roundsWon: this.roundsWon, trickNumber: this.trickNumber,
                 dealer: this.dealerIndex, log: this.logLines.slice(-7), lastWinner: this.lastWinner, roundResult: this.roundResult,
                 playable: hand.filter(c => isCardPlayable(c, this.trumpSuit, this.trickNumber, this.trick.length)).map(cardId)
