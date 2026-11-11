@@ -126,8 +126,9 @@
             padding: 4px 2px;
             transition: all 0.2s ease;
         }
-        .inst-icon-btn svg { width: 22px; height: 22px; fill: currentColor; margin-bottom: 2px; }
-        .inst-icon-btn span { font-size: 14px; letter-spacing: 1px; line-height: 1; }
+        .inst-icon-btn svg { width: 22px; height: 22px; fill: currentColor; margin-bottom: 2px; flex: 0 0 auto; }
+        .inst-icon-btn span { font-size: 14px; letter-spacing: 1px; line-height: 1; max-width: 100%; white-space: nowrap; overflow: hidden; }
+        .inst-icon-btn span.long { font-size: 10.5px; letter-spacing: 0.3px; }
         .inst-icon-btn:hover { border-color: var(--gold); color: var(--parchment); }
         .inst-icon-btn.active {
             background: var(--ink);
@@ -624,7 +625,7 @@
                     <textarea class="net-log" readonly style="height:140px"></textarea>
                 </details>
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
-                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 20:34</p>
+                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 20:50</p>
             </div>
         </div>
     </div>
@@ -1020,7 +1021,7 @@
             manual_invite_hint: 'Create an invitation text and send it to the guest (WhatsApp, e-mail). The guest sends back a reply text that you paste below.',
             make_invite_btn: 'Create invitation text', answer_label: 'Guest\'s reply text', answer_ph: 'Paste the reply text here', accept_answer_btn: 'Accept reply',
             lobby_guest_hint: 'Wait for the dealer to start the battle. Use “Sit here” to change seats.', seat_here_btn: 'Sit here',
-            leave_btn: 'Leave the table', inst_lute: 'Lute', inst_hg: 'Hurdy-gurdy', inst_drum: 'Drum', inst_shawm: 'Shawm', shawm_title: 'Shawm on/off', shawm_vol: 'Shawm volume',
+            leave_btn: 'Leave the table', inst_lute: 'Lute', inst_hg: 'Hurdy‑gurdy', inst_drum: 'Drum', inst_shawm: 'Shawm', shawm_title: 'Shawm on/off', shawm_vol: 'Shawm volume',
             lute_title: 'Renaissance lute on/off', hg_title: 'Hurdy-gurdy on/off', drum_title: 'Landsknecht drum on/off',
             lute_vol: 'Lute volume', hg_vol: 'Hurdy-gurdy volume', drum_vol: 'Drum volume',
             music_on: 'Minstrels: On', music_off: 'Minstrels: Off',
@@ -1063,6 +1064,7 @@
         return s;
     }
     function applyLang() {
+        document.querySelectorAll('.inst-icon-btn span').forEach(s => s.classList.toggle('long', (I18N[LANG][s.dataset.i18n] || '').length > 8));
         document.documentElement.lang = LANG;
         document.title = T('title');
         document.querySelectorAll('[data-i18n]').forEach(el => { el.innerHTML = T(el.getAttribute('data-i18n')); });
@@ -1634,7 +1636,7 @@
         return {
             isRunning: false,
             master, strings, chanBus, wheelGain,
-            chan, drone0, drone1, drone2, tromp, buzzLFO, chienEnv, bowBP, crackleGain,
+            chan, drone0, drone1, drone2, tromp, buzzLFO, chienEnv, bowBP, crackleGain, trompBP,
             bodyInput: strings,
             crank: { speed: 1.0, target: 1.0, phase: 0, lastT: ctx.currentTime, timer: null }
         };
@@ -1743,9 +1745,13 @@
         const chienLvl = (typeof band !== 'undefined') ? band.chien * band.chienBar : 0.6;
         if ((isCrankAccent && Math.random() < 0.35 + 0.65 * chienLvl) || Math.random() < 0.22 * chienLvl) {
             const e = hgWheel.chienEnv.gain;
-            const strength = (isCrankAccent ? 0.3 + Math.random() * 0.3 : 0.1 + Math.random() * 0.1) * (0.35 + 0.95 * chienLvl);
-            const len = 0.06 + Math.random() * 0.08;
-            hgWheel.buzzLFO.frequency.setValueAtTime(18 + Math.random() * 14, when);
+            const strength = (isCrankAccent ? 0.3 + Math.random() * 0.3 : 0.1 + Math.random() * 0.1) * (0.15 + 1.1 * chienLvl);
+            // Jeder Ruck ist anders: mal ein kurzes "tk", mal ein längeres Schnarren, mal hell, mal dumpf
+            const shape = Math.random();
+            const len = shape < 0.4 ? 0.035 + Math.random() * 0.04 : (shape < 0.85 ? 0.07 + Math.random() * 0.1 : 0.16 + Math.random() * 0.14);
+            hgWheel.buzzLFO.frequency.setValueAtTime(14 + Math.random() * 26, when);
+            hgWheel.trompBP.frequency.setTargetAtTime(900 + Math.random() * 1500, when, 0.01);
+            hgWheel.trompBP.Q.setTargetAtTime(0.5 + Math.random() * 1.2, when, 0.01);
             e.cancelScheduledValues(when);
             e.setValueAtTime(0.0, when);
             e.linearRampToValueAtTime(strength, when + 0.015);
@@ -1857,55 +1863,107 @@
         const shRev = audioCtx.createGain(); shRev.gain.value = 0.5;
         userVolGains.shawm.connect(shPan); shPan.connect(masterGain); shPan.connect(shRev); shRev.connect(cellarReverb);
         shawmBus = audioCtx.createGain(); shawmBus.gain.value = 1.0;
-        const f1 = audioCtx.createBiquadFilter(); f1.type = 'peaking'; f1.frequency.value = 1150; f1.Q.value = 2.2; f1.gain.value = 9;
-        const f2 = audioCtx.createBiquadFilter(); f2.type = 'peaking'; f2.frequency.value = 2500; f2.Q.value = 2.6; f2.gain.value = 6;
-        const f3 = audioCtx.createBiquadFilter(); f3.type = 'lowpass'; f3.frequency.value = 4300; f3.Q.value = 0.6;
+        // Bohrung und Becher: Formanten der Schalmei (um 1,2 kHz kräftig, 2,6 kHz, 3,8 kHz), Becher dämpft darüber
+        const f0 = audioCtx.createBiquadFilter(); f0.type = 'highpass'; f0.frequency.value = 180; f0.Q.value = 0.7;
+        const f1 = audioCtx.createBiquadFilter(); f1.type = 'peaking'; f1.frequency.value = 1200; f1.Q.value = 1.6; f1.gain.value = 7;
+        const f2 = audioCtx.createBiquadFilter(); f2.type = 'peaking'; f2.frequency.value = 2600; f2.Q.value = 2.0; f2.gain.value = 4;
+        const f2b = audioCtx.createBiquadFilter(); f2b.type = 'peaking'; f2b.frequency.value = 3800; f2b.Q.value = 2.5; f2b.gain.value = 3;
+        const f3 = audioCtx.createBiquadFilter(); f3.type = 'lowpass'; f3.frequency.value = 5200; f3.Q.value = 0.7;
         const shBody = audioCtx.createWaveShaper();
-        const shCurve = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = (i / 511.5) - 1; shCurve[i] = Math.tanh(x * 1.6) / Math.tanh(1.6); }
+        const shCurve = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = (i / 511.5) - 1; shCurve[i] = Math.tanh(x * 1.3) / Math.tanh(1.3); }
         shBody.curve = shCurve;
-        shawmBus.connect(shBody); shBody.connect(f1); f1.connect(f2); f2.connect(f3); f3.connect(userVolGains.shawm);
+        const shGain = audioCtx.createGain(); shGain.gain.value = 0.55;
+        shawmBus.connect(f0); f0.connect(f1); f1.connect(f2); f2.connect(f2b); f2b.connect(shBody); shBody.connect(f3); f3.connect(shGain); shGain.connect(userVolGains.shawm);
         shawmNoise = createWheelNoiseLoop(audioCtx);
+        initShawm();
     }
 
     /* ---------- 2E2. Schalmei ----------
-       Doppelrohrblatt: Sägezahn und leicht verstimmte Rechteckwelle durch Formanten (näselnd), mit Zungenstoß
-       (kurzer Anlauf von unten), Atemrauschen, und auf langen Tönen ein Vibrato, das erst nach dem Ansatz kommt.
-       Der Spieler muss atmen: nach fünf bis acht Sekunden Spiel setzt er aus und holt Luft. */
-    function scheduleShawm(noteName, when, durSec, vel = 1.0, onBeat = false, ornamentNoteName = null) {
-        if (!audioCtx || !isMusicPlaying || !instEnabled.shawm || !shawmBus || !FREQS[noteName]) return;
-        when = Math.max(audioCtx.currentTime, when + humanize('shawm', onBeat));
-        const f = FREQS[noteName] * 2;                                    // die Schalmei singt eine Oktave über der Melodie
-        const len = Math.max(0.09, durSec - 0.035 - Math.random() * 0.03);   // Zungenstoß: kleine Lücke vor dem nächsten Ton
-        const o1 = audioCtx.createOscillator(); o1.type = 'sawtooth';
-        const o2 = audioCtx.createOscillator(); o2.type = 'square'; o2.detune.value = 4 + Math.random() * 3;
-        const mix2 = audioCtx.createGain(); mix2.gain.value = 0.35;
-        const env = audioCtx.createGain();
-        const start = f * (0.975 - Math.random() * 0.012);
-        [o1, o2].forEach(o => { o.frequency.setValueAtTime(start, when); o.frequency.exponentialRampToValueAtTime(f, when + 0.03 + Math.random() * 0.02); });
-        // Vibrato auf langen Tönen: setzt verzögert ein, wird breiter
-        if (len >= 0.45) {
-            const lfo = audioCtx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 4.8 + Math.random() * 1.4;
-            const depth = audioCtx.createGain(); depth.gain.setValueAtTime(0, when); depth.gain.linearRampToValueAtTime(6 + Math.random() * 6, when + Math.min(0.5, len * 0.5));
-            lfo.connect(depth); depth.connect(o1.detune); depth.connect(o2.detune);
-            lfo.start(when); lfo.stop(when + len + 0.1);
+       Kein Oszillator. Ein AudioWorklet rechnet das Instrument Sample für Sample: Das Doppelrohrblatt öffnet
+       in jeder Schwingung nur kurz (Druckimpuls); der Blasdruck bestimmt Lautstärke, Impulsbreite (= Helligkeit)
+       und einen Hauch Tonhöhe, wie beim echten Instrument. Unter der Ansprechschwelle gibt es nur Atem, knapp
+       darüber schwingt das Blatt unsauber (das Krächzen beim Ansatz), dann rastet es ein. Dazu Atemrauschen,
+       das durch die Bohrung gefärbt wird, und danach Formanten von Bohrung und Becher. */
+    const SHAWM_WORKLET = `
+    class ShawmProcessor extends AudioWorkletProcessor {
+        static get parameterDescriptors() { return [
+            { name: 'pressure', defaultValue: 0, minValue: 0, maxValue: 1.5, automationRate: 'a-rate' },
+            { name: 'freq', defaultValue: 440, minValue: 20, maxValue: 8000, automationRate: 'a-rate' } ]; }
+        constructor() { super(); this.ph = 0; this.lock = 0; this.n1 = 0; this.n2 = 0; this.amp = 0; this.jit = 0; this.lastOut = 0; this.lp = 0; this.hp = 0; this.hpx = 0; }
+        process(inputs, outputs, params) {
+            const out = outputs[0][0]; const P = params.pressure, F = params.freq; const sr = sampleRate;
+            for (let i = 0; i < out.length; i++) {
+                const p = P.length > 1 ? P[i] : P[0];
+                const f0 = F.length > 1 ? F[i] : F[0];
+                // Ansprechen: unter 0.22 kein Ton; darüber rastet das Blatt allmählich ein (lock 0..1)
+                const above = p > 0.22 ? 1 : 0;
+                this.lock += (above ? 0.00012 * (1 + 2 * p) : -0.0006) ; if (this.lock < 0) this.lock = 0; if (this.lock > 1) this.lock = 1;
+                const unstable = 1 - this.lock;
+                // Tonhöhe: ein Hauch höher bei mehr Druck, unsauber beim Ansatz
+                this.n1 = 0.995 * this.n1 + 0.005 * (Math.random() * 2 - 1);
+                const cents = 6 * (p - 0.6) + unstable * 60 * this.n1;
+                const f = f0 * Math.pow(2, cents / 1200);
+                this.ph += f / sr; if (this.ph >= 1) this.ph -= 1;
+                // Druckimpuls: Öffnungsdauer kürzer bei mehr Druck -> heller
+                const oq = Math.max(0.16, Math.min(0.6, 0.62 - 0.45 * p)) * (1 + unstable * 0.5);
+                let pulse = this.ph < oq ? 0.5 - 0.5 * Math.cos(2 * Math.PI * this.ph / oq) : 0;
+                pulse = pulse * pulse * (1 - 0.3 * oq) ;   // spitzer Impuls
+                // Amplitude des Blatts: sanfte Kurve über dem Druck, beim unsauberen Ansatz flatternd
+                const target = above ? Math.pow(Math.max(0, p - 0.18), 1.25) * (1 - 0.55 * unstable * (0.5 + 0.5 * Math.sin(this.ph * 6.28 * 0.5 + this.n1 * 9))) : 0;
+                this.amp += (target - this.amp) * 0.004;
+                // Atem: Rauschen, stärker bei wenig Druck und beim Ansatz; durch die Bohrung gefärbt (resonanter Tiefpass unten im Worklet, Formanten draußen)
+                this.n2 = 0.6 * this.n2 + 0.4 * (Math.random() * 2 - 1);
+                const breath = this.n2 * (0.012 + 0.05 * Math.max(0, 0.5 - p) + 0.06 * unstable) * (p > 0.05 ? Math.min(1, p * 3) : 0);
+                let s = (pulse - oq * 0.5) * this.amp * 1.6 + breath;
+                // Gleichanteil weg
+                this.hp = s - this.hpx + 0.995 * this.hp; this.hpx = s;
+                out[i] = this.hp;
+            }
+            return true;
         }
+    }
+    registerProcessor('shawm', ShawmProcessor);`;
+    let shawmNode = null, shawmReady = false;
+    function initShawm() {
+        if (!audioCtx || !audioCtx.audioWorklet || shawmReady) return;
+        shawmReady = true;
+        const make = () => { shawmNode = new AudioWorkletNode(audioCtx, 'shawm', { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [1] }); shawmNode.connect(shawmBus); };
+        const dataUrl = 'data:application/javascript;base64,' + btoa(unescape(encodeURIComponent(SHAWM_WORKLET)));
+        audioCtx.audioWorklet.addModule(dataUrl).then(make).catch(() => {
+            const url = URL.createObjectURL(new Blob([SHAWM_WORKLET], { type: 'application/javascript' }));
+            audioCtx.audioWorklet.addModule(url).then(make).catch(e => { console.warn('Schalmei nicht verfügbar', e); shawmNode = null; });
+        });
+    }
+    // Der Blasdruck als Spielgröße: jeder Ton ist ein Druckverlauf. Angestoßen (Zunge) oder gebunden (legato).
+    let shawmLegatoUntil = 0;
+    function scheduleShawm(noteName, when, durSec, vel = 1.0, onBeat = false, ornamentNoteName = null, legato = false) {
+        if (!audioCtx || !isMusicPlaying || !instEnabled.shawm || !shawmNode || !FREQS[noteName]) return;
+        when = Math.max(audioCtx.currentTime + 0.01, when + humanize('shawm', onBeat));
+        const f = FREQS[noteName] * 2;                      // die Schalmei singt eine Oktave über der Linie
+        const pr = shawmNode.parameters.get('pressure'), fq = shawmNode.parameters.get('freq');
+        const len = Math.max(0.08, durSec - (legato ? 0 : 0.03 + Math.random() * 0.03));
+        const target = 0.5 + 0.45 * Math.min(1.2, vel) * (0.92 + Math.random() * 0.16);
+        pr.cancelScheduledValues(when); fq.cancelScheduledValues(when);
+        // Tonhöhe: gebunden gleitet sie kurz, angestoßen kommt sie fast direkt, mit kleinem Anlauf von unten
+        if (legato) { fq.setTargetAtTime(f, when, 0.018); }
+        else { fq.setValueAtTime(f * 0.985, when); fq.exponentialRampToValueAtTime(f, when + 0.025 + Math.random() * 0.02); }
         if (ornamentNoteName && FREQS[ornamentNoteName] && len >= 0.3) {
-            const fo = FREQS[ornamentNoteName] * 2, at = when + 0.07;
-            [o1, o2].forEach(o => { o.frequency.setValueAtTime(fo, at); o.frequency.setValueAtTime(f, at + 0.06); });
+            const fo = FREQS[ornamentNoteName] * 2, at = when + 0.06 + Math.random() * 0.03;
+            fq.setTargetAtTime(fo, at, 0.008); fq.setTargetAtTime(f, at + 0.06, 0.008);
         }
-        const peak = 0.13 * vel * (0.9 + Math.random() * 0.2);
-        env.gain.setValueAtTime(0.0001, when);
-        env.gain.exponentialRampToValueAtTime(peak, when + 0.018 + Math.random() * 0.012);
-        if (len >= 0.9) { env.gain.setTargetAtTime(peak * 0.85, when + 0.15, 0.2); env.gain.setTargetAtTime(peak * 1.1, when + len * 0.45, len * 0.25); }
-        env.gain.setTargetAtTime(0.0001, when + len - 0.03, 0.018);
-        o1.connect(env); o2.connect(mix2); mix2.connect(env); env.connect(shawmBus);
-        o1.start(when); o2.start(when); o1.stop(when + len + 0.15); o2.stop(when + len + 0.15);
-        // Atemrauschen, mit dem Ton
-        const nz = audioCtx.createBufferSource(); nz.buffer = shawmNoise; nz.loop = true;
-        const nbp = audioCtx.createBiquadFilter(); nbp.type = 'bandpass'; nbp.frequency.value = f * 2.5; nbp.Q.value = 2.5;
-        const ng = audioCtx.createGain(); ng.gain.setValueAtTime(0.0001, when); ng.gain.exponentialRampToValueAtTime(0.05 * vel, when + 0.02); ng.gain.setTargetAtTime(0.0001, when + len - 0.03, 0.02);
-        nz.connect(nbp); nbp.connect(ng); ng.connect(shawmBus); nz.start(when); nz.stop(when + len + 0.15);
-        o1.onended = () => { [o1, o2, mix2, env, nz, nbp, ng].forEach(x => { try { x.disconnect(); } catch (e) {} }); };
+        // Druck: Zungenstoß (kurz überblasen), dann halten mit langsamem Atemwogen, Vibrato auf langen Tönen durch Druck
+        const atk = onBeat ? 0.02 + Math.random() * 0.015 : 0.03 + Math.random() * 0.025;
+        if (!legato) { pr.setValueAtTime(0.1, when); pr.linearRampToValueAtTime(target * 1.12, when + atk); pr.setTargetAtTime(target, when + atk, 0.04); }
+        else pr.setTargetAtTime(target, when, 0.03);
+        if (len >= 0.5) {
+            const vibHz = 4.6 + Math.random() * 1.6, vibStart = when + Math.min(0.35, len * 0.4), steps = Math.floor((len - (vibStart - when)) * vibHz * 2);
+            const depth = 0.04 + 0.05 * Math.min(1, (len - 0.5));
+            for (let k = 1; k <= steps; k++) pr.linearRampToValueAtTime(target * (1 + (k % 2 ? depth : -depth * 0.6) * Math.min(1, k / 4)), vibStart + k / (vibHz * 2));
+            if (len >= 1.0) { pr.setTargetAtTime(target * 1.08, when + len * 0.45, len * 0.2); }
+        }
+        // Absetzen: Druck nimmt ab, das Blatt hört auf - nicht abgeschnitten
+        pr.setTargetAtTime(0.0, when + len - 0.02, legato ? 0.03 : 0.022);
+        shawmLegatoUntil = when + len;
     }
     function scheduleBreath(when) {
         // Luft holen: ein kurzer, dunkler Atemzug ohne Ton
@@ -2299,7 +2357,8 @@
         const contour = [0.82, 0.9, 1.0, 0.88][bIdx] * (band.role === 'answer' ? 0.94 : 1.0) * (0.72 + 0.4 * I);
         band.dyn = contour * (0.94 + Math.random() * 0.12);
         if (bIdx === 0) band.chien = Math.max(0.05, Math.min(piece.chienMax, band.chien * 0.6 + (0.1 + 0.9 * I) * 0.4 + (Math.random() - 0.5) * 0.3));   // Laune der Schnarrsaite, je Phrase
-        band.chienBar = chance(0.12) ? 0.15 : (0.7 + Math.random() * 0.5);                                                             // und je Takt mal mehr, mal weniger, mal fast gar nicht
+        band.chienBar = chance(0.2) ? 0.1 : (0.5 + Math.random() * 0.7);
+        if (I < 0.3 && chance(0.5)) band.chienBar *= 0.3;                                   // im ruhigen Spiel bleibt die Schnarrsaite meist liegen                                                             // und je Takt mal mehr, mal weniger, mal fast gar nicht
         const noteVel = (onBeat, dur, posFrac) => {
             // Akzent auf dem Schlag, lange Töne etwas getragen, in der Steigerung wächst es im Takt
             let v = band.dyn * (onBeat ? 1.08 : 0.9) * (dur >= 3 ? 1.05 : 1.0) * (bIdx === 2 ? 0.92 + 0.16 * posFrac : 1.0);
@@ -2364,10 +2423,12 @@
             let p3 = 0;
             melody.forEach(nt => {
                 const t = barStartTime + p3 * E + (tex === 'tutti' ? 0.012 : 0), durSec = nt.dur * E, onBeat = beats.includes(p3);
-                if (band.breathLeft <= 0 && !nt.cadence) { scheduleBreath(t - 0.1); band.breathLeft = 5 + Math.random() * 3; }
+                if (band.breathLeft <= 0 && !nt.cadence) { scheduleBreath(t - 0.1); band.breathLeft = 5 + Math.random() * 3; band.lastShawmIdx = undefined; }
                 else {
                     const orn = (nt.dur >= 3 && chance(0.35 + 0.3 * I)) ? SCALE[clampI(nt.idx + 1, n)] : null;
-                    scheduleShawm(SCALE[clampI(nt.idx, n)], t, durSec, noteVel(onBeat, nt.dur, p3 / meter) * (tex === 'tutti' ? 0.85 : 1.0), onBeat, orn);
+                    const legato = !onBeat && band.lastShawmIdx !== undefined && Math.abs(band.lastShawmIdx - nt.idx) === 1 && chance(0.6);   // Nachbartöne oft gebunden
+                    scheduleShawm(SCALE[clampI(nt.idx, n)], t, durSec, noteVel(onBeat, nt.dur, p3 / meter) * (tex === 'tutti' ? 0.85 : 1.0), onBeat, orn, legato);
+                    band.lastShawmIdx = nt.idx;
                     band.breathLeft -= durSec;
                 }
                 p3 += nt.dur;
