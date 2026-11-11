@@ -624,7 +624,7 @@
                     <textarea class="net-log" readonly style="height:140px"></textarea>
                 </details>
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
-                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 20:13</p>
+                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 20:34</p>
             </div>
         </div>
     </div>
@@ -699,6 +699,15 @@
                 </button>
                 <div class="vol-slider-wrap" data-i18n-title="drum_vol" title="Lautstärke der Trommel">
                     <input type="range" class="inst-vol-slider" id="vol-drum" min="0" max="100" value="72" oninput="setInstrumentVolume('drum', this.value)">
+                </div>
+            </div>
+            <div class="inst-column">
+                <button class="inst-icon-btn" id="btn-inst-shawm" onclick="toggleInstrument('shawm')" data-i18n-title="shawm_title" title="Schalmei ein-/ausschalten">
+                    <svg viewBox="0 0 24 24"><path d="M11 2H13V4.2L14.2 5.2V7H9.8V5.2L11 4.2V2ZM9.8 8H14.2L14.8 15.5C15.2 16.8 16.5 18.5 18 20L16.5 21.5C15.4 20.6 14.3 19.6 13.5 18.6V22H10.5V18.6C9.7 19.6 8.6 20.6 7.5 21.5L6 20C7.5 18.5 8.8 16.8 9.2 15.5L9.8 8ZM12 9.5A0.7 0.7 0 1 0 12 10.9A0.7 0.7 0 1 0 12 9.5ZM12 11.8A0.7 0.7 0 1 0 12 13.2A0.7 0.7 0 1 0 12 11.8ZM12 14.1A0.7 0.7 0 1 0 12 15.5A0.7 0.7 0 1 0 12 14.1Z"/></svg>
+                    <span data-i18n="inst_shawm">Schalmei</span>
+                </button>
+                <div class="vol-slider-wrap" data-i18n-title="shawm_vol" title="Lautstärke der Schalmei">
+                    <input type="range" class="inst-vol-slider" id="vol-shawm" min="0" max="100" value="55" oninput="setInstrumentVolume('shawm', this.value)">
                 </div>
             </div>
         </div>
@@ -965,7 +974,7 @@
             manual_invite_hint: 'Erzeuge einen Einladungstext und schicke ihn dem Gast (WhatsApp, E-Mail). Er schickt dir einen Antworttext zurück, den du unten einträgst.',
             make_invite_btn: 'Einladungstext erzeugen', answer_label: 'Antworttext des Gastes', answer_ph: 'Antworttext hier einfügen', accept_answer_btn: 'Antwort annehmen',
             lobby_guest_hint: 'Warte, bis der Geber die Schlacht beginnt. Mit „Hierher setzen“ kannst du noch den Platz wechseln.', seat_here_btn: 'Hierher setzen',
-            leave_btn: 'Tisch verlassen', inst_lute: 'Laute', inst_hg: 'Drehleier', inst_drum: 'Trommel',
+            leave_btn: 'Tisch verlassen', inst_lute: 'Laute', inst_hg: 'Drehleier', inst_drum: 'Trommel', inst_shawm: 'Schalmei', shawm_title: 'Schalmei ein-/ausschalten', shawm_vol: 'Lautstärke der Schalmei',
             lute_title: 'Renaissance-Laute ein-/ausschalten', hg_title: 'Drehleier ein-/ausschalten', drum_title: 'Landsknecht-Trommel ein-/ausschalten',
             lute_vol: 'Lautstärke der Laute', hg_vol: 'Lautstärke der Drehleier', drum_vol: 'Lautstärke der Trommel',
             music_on: 'Spielleute: Ein', music_off: 'Spielleute: Aus',
@@ -1011,7 +1020,7 @@
             manual_invite_hint: 'Create an invitation text and send it to the guest (WhatsApp, e-mail). The guest sends back a reply text that you paste below.',
             make_invite_btn: 'Create invitation text', answer_label: 'Guest\'s reply text', answer_ph: 'Paste the reply text here', accept_answer_btn: 'Accept reply',
             lobby_guest_hint: 'Wait for the dealer to start the battle. Use “Sit here” to change seats.', seat_here_btn: 'Sit here',
-            leave_btn: 'Leave the table', inst_lute: 'Lute', inst_hg: 'Hurdy-gurdy', inst_drum: 'Drum',
+            leave_btn: 'Leave the table', inst_lute: 'Lute', inst_hg: 'Hurdy-gurdy', inst_drum: 'Drum', inst_shawm: 'Shawm', shawm_title: 'Shawm on/off', shawm_vol: 'Shawm volume',
             lute_title: 'Renaissance lute on/off', hg_title: 'Hurdy-gurdy on/off', drum_title: 'Landsknecht drum on/off',
             lute_vol: 'Lute volume', hg_vol: 'Hurdy-gurdy volume', drum_vol: 'Drum volume',
             music_on: 'Minstrels: On', music_off: 'Minstrels: Off',
@@ -1103,8 +1112,9 @@
     let cellarReverb = null;
     let sfxBus = null;
 
-    let userVolGains = { lute: null, hg: null, drum: null };
-    let userVolValues = { lute: 0.75, hg: 0.65, drum: 0.72 };
+    let userVolGains = { lute: null, hg: null, drum: null, shawm: null };
+    let userVolValues = { lute: 0.75, hg: 0.65, drum: 0.72, shawm: 0.55 };
+    let shawmBus = null, shawmNoise = null;
 
     let luteInputBus = null;
     let hgBus = null;
@@ -1115,7 +1125,7 @@
     let hgWheel = null;
 
     let isMusicPlaying = false;
-    let instEnabled = { lute: true, hg: true, drum: true };
+    let instEnabled = { lute: true, hg: true, drum: true, shawm: false };   // die Schalmei ist anfangs aus
 
     let currentMoodIdx = 0;
     let schedulerInterval = null;
@@ -1426,7 +1436,7 @@
         const out = new Float32Array(N);
         const courses = [{ f: freq, g: 1.0 }, { f: freq * (1 + (0.0012 + Math.random() * 0.0008)), g: 0.7 }];   // Doppelchor: ca. 2-3,5 Cent
         // Darmsaiten: tiefe Töne klingen lang, hohe kurz
-        const t60 = Math.max(1.4, 3.8 - (freq / 400) * 1.3);
+        const t60 = Math.max(1.8, 3.8 - (freq / 400) * 1.2);
 
         for (const c of courses) {
             const period = sr / c.f;
@@ -1468,7 +1478,13 @@
         const norm = 0.85 / (peak || 1);
         const buffer = ctx.createBuffer(1, N, sr);
         const ch = buffer.getChannelData(0);
-        for (let n = 0; n < N; n++) ch[n] = Math.tanh(out[n] * norm * 1.15) * 0.9;
+        const fadeIn = Math.floor(sr * 0.0025), fadeOut = Math.floor(sr * 0.35);
+        for (let n = 0; n < N; n++) {
+            let e = 1;
+            if (n < fadeIn) e = n / fadeIn;                                   // kein harter Einsatz
+            if (n > N - fadeOut) e *= (N - n) / fadeOut;                       // kein abgeschnittenes Ende
+            ch[n] = Math.tanh(out[n] * norm * 1.15) * 0.9 * e;
+        }
         return buffer;
     }
 
@@ -1723,9 +1739,11 @@
         }
 
         // Kurbelruck: Schnarrsaite springt an - jeder Ruck ein wenig anders
-        if (isCrankAccent || Math.random() < 0.22) {
+        // Schnarrsaite: wie stark der Spieler sie anspringen lässt, wandert mit Spannung und Laune
+        const chienLvl = (typeof band !== 'undefined') ? band.chien * band.chienBar : 0.6;
+        if ((isCrankAccent && Math.random() < 0.35 + 0.65 * chienLvl) || Math.random() < 0.22 * chienLvl) {
             const e = hgWheel.chienEnv.gain;
-            const strength = isCrankAccent ? 0.3 + Math.random() * 0.3 : 0.1 + Math.random() * 0.1;
+            const strength = (isCrankAccent ? 0.3 + Math.random() * 0.3 : 0.1 + Math.random() * 0.1) * (0.35 + 0.95 * chienLvl);
             const len = 0.06 + Math.random() * 0.08;
             hgWheel.buzzLFO.frequency.setValueAtTime(18 + Math.random() * 14, when);
             e.cancelScheduledValues(when);
@@ -1831,6 +1849,71 @@
         userVolGains.drum.connect(masterGain); userVolGains.drum.connect(cellarReverb);
 
         hgWheel = initContinuousHurdyGurdy(audioCtx, hgBus);
+
+        // Schalmei: laut, näselnd, ein Doppelrohrblatt - steht etwas rechts hinten
+        userVolGains.shawm = audioCtx.createGain();
+        userVolGains.shawm.gain.value = userVolValues.shawm * 1.0;
+        const shPan = audioCtx.createStereoPanner(); shPan.pan.value = 0.12;
+        const shRev = audioCtx.createGain(); shRev.gain.value = 0.5;
+        userVolGains.shawm.connect(shPan); shPan.connect(masterGain); shPan.connect(shRev); shRev.connect(cellarReverb);
+        shawmBus = audioCtx.createGain(); shawmBus.gain.value = 1.0;
+        const f1 = audioCtx.createBiquadFilter(); f1.type = 'peaking'; f1.frequency.value = 1150; f1.Q.value = 2.2; f1.gain.value = 9;
+        const f2 = audioCtx.createBiquadFilter(); f2.type = 'peaking'; f2.frequency.value = 2500; f2.Q.value = 2.6; f2.gain.value = 6;
+        const f3 = audioCtx.createBiquadFilter(); f3.type = 'lowpass'; f3.frequency.value = 4300; f3.Q.value = 0.6;
+        const shBody = audioCtx.createWaveShaper();
+        const shCurve = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = (i / 511.5) - 1; shCurve[i] = Math.tanh(x * 1.6) / Math.tanh(1.6); }
+        shBody.curve = shCurve;
+        shawmBus.connect(shBody); shBody.connect(f1); f1.connect(f2); f2.connect(f3); f3.connect(userVolGains.shawm);
+        shawmNoise = createWheelNoiseLoop(audioCtx);
+    }
+
+    /* ---------- 2E2. Schalmei ----------
+       Doppelrohrblatt: Sägezahn und leicht verstimmte Rechteckwelle durch Formanten (näselnd), mit Zungenstoß
+       (kurzer Anlauf von unten), Atemrauschen, und auf langen Tönen ein Vibrato, das erst nach dem Ansatz kommt.
+       Der Spieler muss atmen: nach fünf bis acht Sekunden Spiel setzt er aus und holt Luft. */
+    function scheduleShawm(noteName, when, durSec, vel = 1.0, onBeat = false, ornamentNoteName = null) {
+        if (!audioCtx || !isMusicPlaying || !instEnabled.shawm || !shawmBus || !FREQS[noteName]) return;
+        when = Math.max(audioCtx.currentTime, when + humanize('shawm', onBeat));
+        const f = FREQS[noteName] * 2;                                    // die Schalmei singt eine Oktave über der Melodie
+        const len = Math.max(0.09, durSec - 0.035 - Math.random() * 0.03);   // Zungenstoß: kleine Lücke vor dem nächsten Ton
+        const o1 = audioCtx.createOscillator(); o1.type = 'sawtooth';
+        const o2 = audioCtx.createOscillator(); o2.type = 'square'; o2.detune.value = 4 + Math.random() * 3;
+        const mix2 = audioCtx.createGain(); mix2.gain.value = 0.35;
+        const env = audioCtx.createGain();
+        const start = f * (0.975 - Math.random() * 0.012);
+        [o1, o2].forEach(o => { o.frequency.setValueAtTime(start, when); o.frequency.exponentialRampToValueAtTime(f, when + 0.03 + Math.random() * 0.02); });
+        // Vibrato auf langen Tönen: setzt verzögert ein, wird breiter
+        if (len >= 0.45) {
+            const lfo = audioCtx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 4.8 + Math.random() * 1.4;
+            const depth = audioCtx.createGain(); depth.gain.setValueAtTime(0, when); depth.gain.linearRampToValueAtTime(6 + Math.random() * 6, when + Math.min(0.5, len * 0.5));
+            lfo.connect(depth); depth.connect(o1.detune); depth.connect(o2.detune);
+            lfo.start(when); lfo.stop(when + len + 0.1);
+        }
+        if (ornamentNoteName && FREQS[ornamentNoteName] && len >= 0.3) {
+            const fo = FREQS[ornamentNoteName] * 2, at = when + 0.07;
+            [o1, o2].forEach(o => { o.frequency.setValueAtTime(fo, at); o.frequency.setValueAtTime(f, at + 0.06); });
+        }
+        const peak = 0.13 * vel * (0.9 + Math.random() * 0.2);
+        env.gain.setValueAtTime(0.0001, when);
+        env.gain.exponentialRampToValueAtTime(peak, when + 0.018 + Math.random() * 0.012);
+        if (len >= 0.9) { env.gain.setTargetAtTime(peak * 0.85, when + 0.15, 0.2); env.gain.setTargetAtTime(peak * 1.1, when + len * 0.45, len * 0.25); }
+        env.gain.setTargetAtTime(0.0001, when + len - 0.03, 0.018);
+        o1.connect(env); o2.connect(mix2); mix2.connect(env); env.connect(shawmBus);
+        o1.start(when); o2.start(when); o1.stop(when + len + 0.15); o2.stop(when + len + 0.15);
+        // Atemrauschen, mit dem Ton
+        const nz = audioCtx.createBufferSource(); nz.buffer = shawmNoise; nz.loop = true;
+        const nbp = audioCtx.createBiquadFilter(); nbp.type = 'bandpass'; nbp.frequency.value = f * 2.5; nbp.Q.value = 2.5;
+        const ng = audioCtx.createGain(); ng.gain.setValueAtTime(0.0001, when); ng.gain.exponentialRampToValueAtTime(0.05 * vel, when + 0.02); ng.gain.setTargetAtTime(0.0001, when + len - 0.03, 0.02);
+        nz.connect(nbp); nbp.connect(ng); ng.connect(shawmBus); nz.start(when); nz.stop(when + len + 0.15);
+        o1.onended = () => { [o1, o2, mix2, env, nz, nbp, ng].forEach(x => { try { x.disconnect(); } catch (e) {} }); };
+    }
+    function scheduleBreath(when) {
+        // Luft holen: ein kurzer, dunkler Atemzug ohne Ton
+        if (!audioCtx || !shawmBus || !instEnabled.shawm) return;
+        const nz = audioCtx.createBufferSource(); nz.buffer = shawmNoise;
+        const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 0.8;
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.0001, when); g.gain.exponentialRampToValueAtTime(0.035, when + 0.12); g.gain.exponentialRampToValueAtTime(0.0001, when + 0.3);
+        nz.connect(bp); bp.connect(g); g.connect(shawmBus); nz.start(when); nz.stop(when + 0.35);
     }
 
     function setInstrumentVolume(instKey, sliderVal) {
@@ -1838,7 +1921,7 @@
         const norm = Math.max(0, Math.min(100, parseFloat(sliderVal))) / 100;
         userVolValues[instKey] = norm;
         if (audioCtx && userVolGains[instKey]) {
-            const scale = (instKey === 'lute') ? 1.3 : 1.25;
+            const scale = (instKey === 'lute') ? 1.3 : (instKey === 'shawm' ? 1.0 : 1.25);
             userVolGains[instKey].gain.setTargetAtTime(norm * scale, audioCtx.currentTime, 0.03);
         }
     }
@@ -1848,8 +1931,9 @@
        wandert (der Lautenist drängt, die Trommel hält, die Drehleier zieht), dazu kommt der Zufall jeder
        einzelnen Note - auf dem Schlag enger, zwischen den Schlägen freier. */
     const feel = { lute: 0.004, hg: 0.002, drum: 0.0 };
-    const FEEL_SPAN = { lute: 0.018, hg: 0.016, drum: 0.010 };
+    const FEEL_SPAN = { lute: 0.018, hg: 0.016, drum: 0.010, shawm: 0.014 };
     function humanize(inst, onBeat) {
+        if (feel[inst] === undefined) feel[inst] = 0;
         feel[inst] += (Math.random() - 0.5) * 0.003;
         feel[inst] = Math.max(-FEEL_SPAN[inst], Math.min(FEEL_SPAN[inst], feel[inst]));
         const spread = (onBeat ? 0.55 : 1.0) * (inst === 'drum' ? 0.009 : 0.016);
@@ -1863,9 +1947,11 @@
         const g = audioCtx.createGain();
         src.buffer = luteBuffers[noteName];
         src.detune.value = (Math.random() * 2.0 - 1.0);
-        g.gain.setValueAtTime(gainVal * (0.88 + Math.random() * 0.24), when);
+        const t0 = Math.max(audioCtx.currentTime, when + humanize('lute', onBeat));
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(gainVal * (0.88 + Math.random() * 0.24), t0 + 0.004);   // der Finger kommt ganz kurz an die Saite
         src.connect(g); g.connect(luteInputBus);
-        src.start(Math.max(audioCtx.currentTime, when + humanize('lute', onBeat)));
+        src.start(t0);
         src.onended = () => { src.disconnect(); g.disconnect(); };
     }
 
@@ -1954,7 +2040,7 @@
         intensity: 0.35, arcDir: 1, arcLeft: 6,
         texture: 'hg', textureLeft: 2,
         lastEnd: null, lastBarDrum: null, cursor: null,
-        tempoDrift: 0, luteRest: false, dyn: 1.0
+        tempoDrift: 0, luteRest: false, dyn: 1.0, chien: 0.6, chienBar: 1.0
     };
     function bandReset() { band.motif = null; band.phrase = null; band.barInPhrase = 0; band.phraseNo = 0; band.texture = 'hg'; band.textureLeft = 2; band.intensity = 0.35; band.arcDir = 1; band.arcLeft = 6; band.cursor = null; band.tempoDrift = (Math.random() - 0.5) * 0.02; band.luteRest = false; }
 
@@ -2066,7 +2152,8 @@
         if (band.textureLeft <= 0) {
             const I = band.intensity;
             const base = I > 0.7 ? ['tutti', 'tutti', 'duet', 'drumsolo'] : I > 0.4 ? ['duet', 'hg', 'lute', 'call'] : ['hg', 'lute', 'duet', 'hg'];
-            const options = base.filter(o => !piece || piece.textures.includes(o)).concat(piece ? piece.textures : []);
+            let options = base.filter(o => !piece || piece.textures.includes(o)).concat(piece ? piece.textures : []);
+            if (instEnabled.shawm && (!piece || piece.type !== 'preludium')) options = options.concat(I > 0.4 ? ['shawm', 'shawm', 'tutti'] : ['shawm']);
             let next = pick(options.filter(o => o !== band.texture)) || 'hg';
             band.texture = next;
             band.textureLeft = next === 'drumsolo' ? 1 : 2 + Math.floor(Math.random() * 3);
@@ -2082,7 +2169,10 @@
         saltarello: { tempo: [0.78, 0.88], meter: 6,    bars: [48, 72], imin: 0.45, imax: 1.0,  textures: ['tutti', 'duet', 'hg', 'drumsolo', 'call'], drumsIntro: true },
         ductia:     { tempo: [0.85, 0.95], meter: 8,    bars: [40, 64], imin: 0.35, imax: 0.95, textures: ['hg', 'tutti', 'duet', 'drumsolo'], drumsIntro: true },
         lamento:    { tempo: [1.35, 1.6],  meter: null, bars: [28, 44], imin: 0.15, imax: 0.55, textures: ['hg', 'lute', 'duet'], drumsIntro: false },
-        rotta:      { tempo: [1.0, 1.15],  meter: null, bars: [40, 60], imin: 0.25, imax: 0.8,  textures: ['lute', 'duet', 'call', 'lute'], drumsIntro: false }
+        rotta:      { tempo: [1.0, 1.15],  meter: null, bars: [40, 60], imin: 0.25, imax: 0.8,  textures: ['lute', 'duet', 'call', 'lute'], drumsIntro: false },
+        // ohne Trommel: ein freies langsames Vorspiel und eine schnelle Volta nur auf Saiten
+        preludium:  { tempo: [1.45, 1.75], meter: null, bars: [20, 32], imin: 0.1,  imax: 0.4,  textures: ['lute', 'hg', 'duet', 'lute'], drumsIntro: false, drums: false, rubato: 2.2, chienMax: 0.2 },
+        volta:      { tempo: [0.8, 0.9],   meter: 6,    bars: [40, 56], imin: 0.4,  imax: 0.85, textures: ['lute', 'duet', 'hg', 'call', 'duet'], drumsIntro: false, drums: false, rubato: 1.0, chienMax: 1.0 }
     };
     let piece = null;
     let lastPieceType = null;
@@ -2095,7 +2185,9 @@
         piece = {
             type, meter: P.meter || mood.meter, eighth: mood.eighthSec * tempo,
             total: P.bars[0] + Math.floor(Math.random() * (P.bars[1] - P.bars[0])), played: 0,
-            imin: P.imin, imax: P.imax, textures: P.textures, drumsIntro: P.drumsIntro, phase: 'intro', introLeft: P.drumsIntro ? 2 : 1
+            imin: P.imin, imax: P.imax, textures: P.textures, drumsIntro: P.drumsIntro, phase: 'intro', introLeft: P.drumsIntro ? 2 : 1,
+            drums: P.drums !== false, rubato: P.rubato || 1.0, chienMax: P.chienMax || 1.0,
+            refrain: chance(0.5) ? null : false       // gewürfelt: bekommt dieses Stück einen Kehrreim? (null = ja, wird noch gefasst)
         };
         bandReset();
         band.intensity = P.imin + 0.1; band.arcDir = 1;
@@ -2177,7 +2269,18 @@
             if (band.role === 'answer' && chance(0.15)) band.role = 'question';          // auch mal zwei Fragen
             if (piece.phase === 'ending') band.role = 'answer';
             band.intensity = Math.max(piece.imin, Math.min(piece.imax, band.intensity));
-            band.phrase = makePhrase(mood, meter, band.role, band.intensity, band.cursor);
+            // Kehrreim: wird in der zweiten Phrase gefasst und kehrt dann alle drei Phrasen und zum Schluss wieder - nie ganz gleich
+            const refrainNow = piece.refrain && piece.phase !== 'intro' && ((band.phraseNo % 3 === 2) || piece.phase === 'ending');
+            if (refrainNow) {
+                band.role = 'answer';
+                band.phrase = { bars: piece.refrain.bars.map(b => b.map(x => ({ ...x }))), endIdx: piece.refrain.endIdx };
+                band.phrase.bars.forEach(b => b.forEach(x => { if (!x.cadence && chance(0.12)) x.idx = clampI(x.idx + pick([-1, 1]), n); }));
+                band.refrainPlaying = true;
+            } else {
+                band.phrase = makePhrase(mood, meter, band.role, band.intensity, band.cursor);
+                band.refrainPlaying = false;
+                if (piece.refrain === null && band.phraseNo === 1) { band.role = 'answer'; band.phrase = makePhrase(mood, meter, 'answer', band.intensity, band.cursor); piece.refrain = { bars: band.phrase.bars.map(b => b.map(x => ({ ...x }))), endIdx: band.phrase.endIdx }; }
+            }
             band.cursor = chance(0.6) ? band.phrase.endIdx : null;
         }
         const bIdx = band.barInPhrase;
@@ -2188,13 +2291,15 @@
         // Kadenztakte atmen: minimal breiter; der Schlusstakt des Stücks deutlich (Ritardando)
         // Dazu das Rubato der Band: das Tempo wandert ein wenig, drängt in der Steigerung, hält in der Kadenz
         band.tempoDrift = band.tempoDrift * 0.94 + (Math.random() - 0.5) * 0.012 + (bIdx === 2 ? -0.006 : bIdx === 3 ? 0.006 : 0);
-        band.tempoDrift = Math.max(-0.035, Math.min(0.035, band.tempoDrift));
+        band.tempoDrift = Math.max(-0.035 * piece.rubato, Math.min(0.035 * piece.rubato, band.tempoDrift));
         const stretch = (finalBar ? 1.3 : (isCadence && band.role === 'answer' ? 1.05 : 1.0)) * (1 + band.tempoDrift);
         const E = EIGHTH * stretch;
         const barLen = meter * E;
         // Dynamik der Phrase: Aussage verhalten, Steigerung voll, Kadenz abgefangen; die Antwort etwas leiser als die Frage
         const contour = [0.82, 0.9, 1.0, 0.88][bIdx] * (band.role === 'answer' ? 0.94 : 1.0) * (0.72 + 0.4 * I);
         band.dyn = contour * (0.94 + Math.random() * 0.12);
+        if (bIdx === 0) band.chien = Math.max(0.05, Math.min(piece.chienMax, band.chien * 0.6 + (0.1 + 0.9 * I) * 0.4 + (Math.random() - 0.5) * 0.3));   // Laune der Schnarrsaite, je Phrase
+        band.chienBar = chance(0.12) ? 0.15 : (0.7 + Math.random() * 0.5);                                                             // und je Takt mal mehr, mal weniger, mal fast gar nicht
         const noteVel = (onBeat, dur, posFrac) => {
             // Akzent auf dem Schlag, lange Töne etwas getragen, in der Steigerung wächst es im Takt
             let v = band.dyn * (onBeat ? 1.08 : 0.9) * (dur >= 3 ? 1.05 : 1.0) * (bIdx === 2 ? 0.92 + 0.16 * posFrac : 1.0);
@@ -2209,6 +2314,7 @@
             if (piece.type === 'lamento' && piece.played < piece.total * 0.4) kind = chance(0.5) ? 'sparse' : null;
             if (finalBar) kind = 'close';
             if (tex === 'lute' && I < 0.5) kind = 'sparse';
+            if (!piece.drums) kind = null;
             let pat = kind ? pick(DRUM_PATTERNS[meter][kind]) : [];
             if (band.lastBarDrum === pat && DRUM_PATTERNS[meter][kind].length > 1) pat = pick(DRUM_PATTERNS[meter][kind].filter(p => p !== pat));
             band.lastBarDrum = pat;
@@ -2218,9 +2324,13 @@
         }
 
         // ---- Wer spielt die Linie? ----
+        const shawmOn = instEnabled.shawm && shawmBus;
         const hgPlays = tex === 'hg' || tex === 'duet' || tex === 'tutti' || (tex === 'call' && bIdx < 2);
-        const lutePlays = tex === 'lute' || tex === 'duet' || tex === 'tutti' || (tex === 'call' && bIdx >= 2);
-        const luteMode = tex === 'tutti' ? 'unison' : (tex === 'duet' ? 'hetero' : 'solo');
+        const shawmCall = tex === 'call' && bIdx >= 2 && shawmOn && band.callShawm;
+        const lutePlays = tex === 'lute' || tex === 'duet' || tex === 'tutti' || tex === 'shawm' || (tex === 'call' && bIdx >= 2 && !shawmCall);
+        const shawmPlays = shawmOn && (tex === 'shawm' || tex === 'tutti' || shawmCall || (band.refrainPlaying && chance(0.6)));
+        const luteMode = tex === 'tutti' ? 'unison' : (tex === 'duet' || tex === 'shawm' ? 'hetero' : 'solo');
+        if (tex === 'call' && bIdx === 0) band.callShawm = chance(0.5);
         if (instEnabled.hg && hgWheel && !hgPlays) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime, 0.12);
         if (tex === 'drumsolo') { if (hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime, 0.1); band.barInPhrase = (bIdx + 1) % 4; return barLen; }
 
@@ -2248,11 +2358,28 @@
             pos += nt.dur;
         });
 
+        if (shawmPlays) {
+            // Die Schalmei: trägt die Linie, muss aber atmen
+            if (band.breathLeft === undefined) band.breathLeft = 5 + Math.random() * 3;
+            let p3 = 0;
+            melody.forEach(nt => {
+                const t = barStartTime + p3 * E + (tex === 'tutti' ? 0.012 : 0), durSec = nt.dur * E, onBeat = beats.includes(p3);
+                if (band.breathLeft <= 0 && !nt.cadence) { scheduleBreath(t - 0.1); band.breathLeft = 5 + Math.random() * 3; }
+                else {
+                    const orn = (nt.dur >= 3 && chance(0.35 + 0.3 * I)) ? SCALE[clampI(nt.idx + 1, n)] : null;
+                    scheduleShawm(SCALE[clampI(nt.idx, n)], t, durSec, noteVel(onBeat, nt.dur, p3 / meter) * (tex === 'tutti' ? 0.85 : 1.0), onBeat, orn);
+                    band.breathLeft -= durSec;
+                }
+                p3 += nt.dur;
+            });
+            if (isCadence && chance(0.5)) band.breathLeft = 0;    // nach der Kadenz gern Luft holen
+        }
         if (lutePlays && instEnabled.lute) {
             let line = luteMode === 'hetero' ? heterophony(melody, n) : melody;
+            const luteLevelScale = (tex === 'shawm' || shawmCall) ? 0.7 : 1.0;
             // Der Lautenist lässt Töne stehen: bei ruhigem Spiel fasst er die Linie zu wenigen langen Tönen zusammen
             if (luteMode !== 'unison' && chance(I < 0.4 ? 0.4 : 0.15)) line = holdBar(line);
-            const level = luteMode === 'solo' ? 0.5 : (luteMode === 'unison' ? 0.42 : 0.34);
+            const level = (luteMode === 'solo' ? 0.5 : (luteMode === 'unison' ? 0.42 : 0.34)) * luteLevelScale;
             // Nach einer Antwort-Kadenz lässt er den Schlusston gern ausklingen und setzt erst später wieder ein
             const restUntil = band.luteRest ? meter / 2 : 0;
             band.luteRest = false;
@@ -2305,10 +2432,10 @@
     function toggleInstrument(instKey) {
         ensureAudioReady();
         instEnabled[instKey] = !instEnabled[instKey];
-        const btnMap = { lute: 'btn-inst-lute', hg: 'btn-inst-hg', drum: 'btn-inst-drum' };
+        const btnMap = { lute: 'btn-inst-lute', hg: 'btn-inst-hg', drum: 'btn-inst-drum', shawm: 'btn-inst-shawm' };
         document.getElementById(btnMap[instKey]).classList.toggle('active', instEnabled[instKey]);
         if (instEnabled[instKey] && !isMusicPlaying) { toggleMusicMaster(); return; }
-        if (!instEnabled.lute && !instEnabled.hg && !instEnabled.drum && isMusicPlaying) { toggleMusicMaster(); return; }
+        if (!instEnabled.lute && !instEnabled.hg && !instEnabled.drum && !instEnabled.shawm && isMusicPlaying) { toggleMusicMaster(); return; }
         if (instKey === 'hg') updateHurdyWheelState();
     }
 
@@ -2317,7 +2444,7 @@
         isMusicPlaying = !isMusicPlaying;
         const btn = document.getElementById('music-toggle');
         if (isMusicPlaying) {
-            if (!instEnabled.lute && !instEnabled.hg && !instEnabled.drum) {
+            if (!instEnabled.lute && !instEnabled.hg && !instEnabled.drum && !instEnabled.shawm) {
                 instEnabled.lute = instEnabled.hg = instEnabled.drum = true;
                 ['btn-inst-lute', 'btn-inst-hg', 'btn-inst-drum'].forEach(id => document.getElementById(id).classList.add('active'));
             }
