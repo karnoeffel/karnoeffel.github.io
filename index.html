@@ -625,7 +625,7 @@
                     <textarea class="net-log" readonly style="height:140px"></textarea>
                 </details>
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
-                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-11 23:02</p>
+                <p class="hint-text" style="text-align:right; opacity:0.6"><span data-i18n="version">Fassung</span> 2026-11-12 10:24</p>
             </div>
         </div>
     </div>
@@ -2719,8 +2719,11 @@
             area.classList.toggle('active', v.turn === seat);
             const container = area.querySelector('.cards');
             container.innerHTML = '';
+            // Beim Geben liegt die offene Karte in der Mitte - in der Hand erscheint sie erst, wenn sie eingesammelt ist
+            const faceUpIds = new Set(v.faceUps.map(f => cardId(f.card)));
+            const faceUpCount = v.faceUps.filter(f => f.seat === seat).length;
             if (seat === you) {
-                v.hand.forEach(card => {
+                v.hand.filter(card => !faceUpIds.has(cardId(card))).forEach(card => {
                     const el = createCardElement(card, false, true);
                     const playable = v.playable.includes(cardId(card));
                     if (!playable) { el.classList.add('locked'); el.title = T('devil_locked'); }
@@ -2728,7 +2731,7 @@
                     container.appendChild(el);
                 });
             } else {
-                for (let k = 0; k < v.counts[seat]; k++) container.appendChild(createCardElement({ back: (seat * 3 + k) % 8 }, true));
+                for (let k = 0; k < v.counts[seat] - faceUpCount; k++) container.appendChild(createCardElement({ back: (seat * 3 + k) % 8 }, true));
             }
         }
         // Stich
@@ -3178,7 +3181,16 @@
     }
     function copyInviteLink() { const l = inviteLink(); try { navigator.clipboard.writeText(l); } catch (e) {} document.getElementById('lobby-status').textContent = T('lb_link') + l; }
     function copyCode() { const c = document.getElementById('lobby-code').textContent.trim(); try { navigator.clipboard.writeText(c); } catch (e) {} document.getElementById('lobby-status').textContent = T('lb_code_copied'); }
-    function leaveTable() { location.reload(); }
+    function leaveTable() {
+        // Erst die Musik sanft ausblenden, dann den Tisch verlassen - sonst knackt es beim harten Abbruch
+        if (audioCtx && masterGain && audioCtx.state === 'running') {
+            const now = audioCtx.currentTime;
+            masterGain.gain.cancelScheduledValues(now);
+            masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+            masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.25);
+            setTimeout(() => location.reload(), 320);
+        } else location.reload();
+    }
 
     // Start
     (function init() {
