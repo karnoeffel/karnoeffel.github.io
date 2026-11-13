@@ -741,7 +741,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-13 11:40</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-13 13:33</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -2721,14 +2721,17 @@
         }
         const { winnerPlay, isWinnerFirstCard } = trickWinner(trick, trump);
         const partnerWinning = winnerPlay.seat === (seat + 2) % 4;
-        const deadDevil = sorted.find(c => c.suit === trump && c.rank === '7');
-        if (partnerWinning) return deadDevil || sorted[0];
+        // Abwerfen: das Niedrigste - aber nie den Teufel, solange eine andere Karte da ist. Nachgeworfen ist er
+        // wertlos, als Anspiel später die zweitstärkste Karte im Spiel. Man wirft keinen Schlüssel weg, weil er
+        // in dieses Schloss nicht passt.
+        const dump = sorted.find(c => !(c.suit === trump && c.rank === '7')) || sorted[0];
+        if (partnerWinning) return dump;
         const winning = sorted.filter(c => doesCardBeatWinner(c, winnerPlay.card, isWinnerFirstCard, trump));
         if (winning.length) {
             if (trick.length < 3 && winning.length > 1 && Math.random() < 0.35) return winning[1];
             return winning[0];
         }
-        return deadDevil || sorted[0];
+        return dump;
     }
 
     /* =========================================================================
@@ -3664,7 +3667,7 @@
             strong: 'Gutes Blatt – damit holst du Stiche.', mid: 'Brauchbar. Spiel klug, dann reicht es.', weak: 'Dünn. Dann spielen wir auf meine Karten: wirf ab, wenn ich vorn liege.',
             lead: 'Du spielst aus. ', follow: '{name} liegt vorn mit {card}. ', partnerFront: 'Ich liege vorn mit {card} – der Stich ist unser. ',
             opt: '{card}: {what}', sep: ' · ',
-            w_devil_lead: 'als Anspiel beinah unschlagbar, nur der Karnöffel schlägt ihn', w_devil_dead: 'nachgeworfen ein Fetzen Papier',
+            w_devil_lead: 'als Anspiel beinah unschlagbar, nur der Karnöffel schlägt ihn', w_devil_dead: 'nachgeworfen wertlos – aber halt ihn fest: Als Anspiel ist er die zweitstärkste Karte im Spiel',
             w_karn: 'der Karnöffel – sticht alles', w_pope: 'der Papst – sticht alles außer Karnöffel und angeführtem Teufel', w_kaiser: 'der Kaiser – sticht jede gewöhnliche Karte',
             w_half: 'halber Trumpf – holt alles bis {limit}, nicht darüber', w_dead_trump: 'Trumpffarbe, aber wertlos – eine gewöhnliche Karte',
             w_lead_high: 'hoch in {suit}; nur ein Trumpf nimmt ihn dir', w_lead_low: 'niedrig – gut zum Abwerfen, nicht zum Anführen',
@@ -3685,7 +3688,7 @@
             strong: 'A good hand – you\'ll take tricks with this.', mid: 'Workable. Play wisely and it will do.', weak: 'Thin. Then we play on my cards: throw away when I\'m in front.',
             lead: 'You lead. ', follow: '{name} is in front with {card}. ', partnerFront: 'I\'m in front with {card} – the trick is ours. ',
             opt: '{card}: {what}', sep: ' · ',
-            w_devil_lead: 'as a lead almost unbeatable, only the Karnöffel beats it', w_devil_dead: 'thrown in afterwards it\'s a scrap of paper',
+            w_devil_lead: 'as a lead almost unbeatable, only the Karnöffel beats it', w_devil_dead: 'worthless if thrown in now – but hold on to it: as a lead it is the second-strongest card in the game',
             w_karn: 'the Karnöffel – beats everything', w_pope: 'the Pope – beats all but Karnöffel and a led Devil', w_kaiser: 'the Emperor – beats any ordinary card',
             w_half: 'half-trump – takes everything up to {limit}, nothing above', w_dead_trump: 'chosen suit but worthless – an ordinary card',
             w_lead_high: 'high in {suit}; only a trump can take it from you', w_lead_low: 'low – good to throw away, not to lead',
@@ -3753,7 +3756,8 @@
             const wins = before.length ? doesCardBeatWinner(played.card, trickWinner(before, trump).winnerPlay.card, trickWinner(before, trump).isWinnerFirstCard, trump) : null;
             const recWins = before.length && coach.rec ? doesCardBeatWinner(coach.rec, trickWinner(before, trump).winnerPlay.card, trickWinner(before, trump).isWinnerFirstCard, trump) : null;
             const partnerFront = before.length && trickWinner(before, trump).winnerPlay.seat === 2;
-            if (partnerFront && (played.card.suit === trump || NORMAL_RANK_ORDER[played.card.rank] >= 11)) verdict = C('bad', { hint: LANG === 'de' ? 'Ich lag vorn – die Karte war verschenkt.' : 'I was in front – that card was wasted.' });
+            if (before.length && played.card.suit === trump && played.card.rank === '7' && v.hand.length > 0) verdict = C('bad', { hint: LANG === 'de' ? 'Den Teufel nachgeworfen! Der holt nur als Anspiel – ' + cardName(coach.rec) + ' wäre der Abwurf gewesen.' : 'The Devil thrown in! He only takes as a lead – ' + cardName(coach.rec) + ' was the card to throw.' });
+            else if (partnerFront && (played.card.suit === trump || NORMAL_RANK_ORDER[played.card.rank] >= 11)) verdict = C('bad', { hint: LANG === 'de' ? 'Ich lag vorn – die Karte war verschenkt.' : 'I was in front – that card was wasted.' });
             else if (wins === false && recWins) verdict = C('bad', { hint: LANG === 'de' ? cardName(coach.rec) + ' hätte den Stich geholt.' : cardName(coach.rec) + ' would have taken the trick.' });
             else if (wins) verdict = C('ok', { hint: LANG === 'de' ? 'Sie holt den Stich – ' + cardName(coach.rec) + ' hätte weniger gekostet.' : 'It takes the trick – ' + cardName(coach.rec) + ' would have cost less.' });
             else verdict = C('ok', { hint: '' });
