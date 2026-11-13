@@ -460,12 +460,13 @@
         @keyframes prologue-out { to { opacity: 0; visibility: hidden; } }
 
         #lesson-box {
-            position: fixed; left: 24px; bottom: 24px; z-index: 1400; width: 430px; box-sizing: border-box;
+            position: fixed; left: 24px; bottom: 24px; z-index: 1400; width: 430px; box-sizing: border-box; display: none; flex-direction: column; overflow: hidden;
             background: rgba(20, 16, 12, 0.94); border: 2px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.8);
             padding: 16px 20px 14px 20px; font-family: 'Friedolin', serif; color: var(--parchment); display: none;
         }
         #lesson-step { color: var(--gold); font-size: 14px; letter-spacing: 2px; margin-bottom: 6px; opacity: 0.85; }
-        #lesson-text { font-size: 18px; line-height: 1.42; min-height: 4.4em; animation: lesson-in 0.5s; }
+        #lesson-text { font-size: 18px; line-height: 1.42; min-height: 4.4em; animation: lesson-in 0.5s; overflow-y: auto; flex: 1 1 auto; }
+        #lesson-box.coach #lesson-text { font-size: 16.5px; line-height: 1.38; min-height: 0; }
         #lesson-text.again { animation: lesson-in 0.5s; }
         @keyframes lesson-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         #lesson-btns { display: flex; gap: 10px; margin-top: 12px; justify-content: flex-end; flex-wrap: wrap; }
@@ -740,7 +741,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-13 11:28</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-13 11:40</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -3539,7 +3540,7 @@
         tut = { steps: TUTORIAL[LANG] || TUTORIAL.de, i: -1, busy: false, picked: false };
         showScreen('game');
         ['score-wrap', 'log-wrap'].forEach(id => document.getElementById(id).style.display = 'none');
-        document.getElementById('lesson-box').style.display = 'block';
+        document.getElementById('lesson-box').style.display = 'flex';
         document.getElementById('lesson-next').style.display = '';
         document.getElementById('lesson-skip').textContent = T('tut_skip'); document.getElementById('lesson-skip').onclick = tutorialEnd;
         fitLessonBox();
@@ -3552,10 +3553,18 @@
     function fitLessonBox() {
         const z = parseFloat(document.body.style.zoom) || 1;
         const s = (document.getElementById('board-scaler').style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1];
+        const box = document.getElementById('lesson-box');
         const handLeft = (window.innerWidth / z) / 2 - 300 * s;
-        document.getElementById('lesson-box').style.width = Math.max(300, Math.min(430, handLeft - 24 - 44)) + 'px';
+        box.style.width = Math.max(300, Math.min(430, handLeft - 24 - 44)) + 'px';
+        // Unten bündig mit dem Rahmen des eigenen Namensschilds, oben nie über die Handkarten hinaus
+        const plate = document.querySelector('#south .player-name').getBoundingClientRect();
+        const cards = document.querySelector('#south .cards').getBoundingClientRect();
+        if (plate.height > 0) {
+            box.style.bottom = Math.max(8, Math.round((window.innerHeight - plate.bottom) / z)) + 'px';
+            box.style.maxHeight = Math.max(170, Math.round((plate.bottom - cards.top) / z) - 4) + 'px';
+        }
     }
-    window.addEventListener('resize', () => { if (tut) fitLessonBox(); });
+    window.addEventListener('resize', () => { if (tut || coach) setTimeout(fitLessonBox, 50); });
     function tutClear() {
         for (let i = 0; i < 4; i++) document.querySelector(`.trick-slot[data-pos="${i}"]`).innerHTML = '';
         PLAYER_IDS.forEach(id => document.querySelector(`#${id} .cards`).innerHTML = '');
@@ -3791,13 +3800,13 @@
         role = 'solo';
         coach = { stage: 'start', rec: null, handDone: false, lastTrick: null };
         const seats = [{ name: myName, kind: 'human' }, { name: BOT_NAMES[1], kind: 'bot' }, { name: C('name'), kind: 'bot' }, { name: BOT_NAMES[3], kind: 'bot' }];
-        game = new Game(seats, (seat, view) => { if (seat === 0) { renderView(view); coachObserve(view); } });
+        game = new Game(seats, (seat, view) => { if (seat === 0) { renderView(view); coachObserve(view); if (!coach.fitted) { coach.fitted = true; setTimeout(fitLessonBox, 60); } } });
         onLocalCard = card => game.submit(0, card);
         showScreen('game');
         document.getElementById('log-wrap').style.display = 'none';
-        const box = document.getElementById('lesson-box'); box.style.display = 'block'; box.style.width = '';
+        const box = document.getElementById('lesson-box'); box.style.display = 'flex'; box.style.width = ''; box.classList.add('coach');
         document.getElementById('lesson-step').textContent = C('name');
-        document.getElementById('lesson-skip').textContent = C('coach_quit'); document.getElementById('lesson-skip').onclick = coachEnd;
+        document.getElementById('lesson-skip').textContent = T('coach_quit'); document.getElementById('lesson-skip').onclick = coachEnd;
         document.getElementById('lesson-next').style.display = 'none';
         fitLessonBox();
         coachSay(C('hello'));
@@ -3806,7 +3815,7 @@
     function coachEnd() {
         if (game) { game.stopped = true; }
         coach = null;
-        document.getElementById('lesson-box').style.display = 'none';
+        document.getElementById('lesson-box').style.display = 'none'; document.getElementById('lesson-box').classList.remove('coach');
         document.getElementById('lesson-next').style.display = '';
         document.getElementById('lesson-skip').textContent = T('tut_skip'); document.getElementById('lesson-skip').onclick = tutorialEnd;
         document.getElementById('log-wrap').style.display = '';
