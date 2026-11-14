@@ -471,10 +471,10 @@
         #lesson-text { font-size: 18px; line-height: 1.42; min-height: 0; animation: lesson-in 0.5s; overflow-y: auto; flex: 1 1 auto; padding-right: 10px; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(184,134,11,0.6) transparent; }
         #lesson-text::-webkit-scrollbar, #lesson-reason::-webkit-scrollbar { width: 6px; }
         #lesson-text::-webkit-scrollbar-thumb, #lesson-reason::-webkit-scrollbar-thumb { background: rgba(184,134,11,0.55); }
-        #lesson-box.coach #lesson-text { font-size: 17px; line-height: 1.38; }
+        #lesson-box.coach #lesson-text { font-size: 18px; line-height: 1.38; }
         #lesson-box.coach #lesson-step { margin-bottom: 2px; }
         /* Unterste Zone im Begleitmodus: warum die letzte Runde so ausging - bleibt stehen, bis die nächste endet */
-        #lesson-reason { display: none; flex: 0 0 38%; margin-top: 8px; padding: 8px 10px 6px 0; border-top: 1px solid rgba(184,134,11,0.4); font-size: 16px; line-height: 1.36; overflow-y: auto; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(184,134,11,0.6) transparent; }
+        #lesson-reason { display: none; flex: 0 0 38%; margin-top: 8px; padding: 8px 10px 6px 0; border-top: 1px solid rgba(184,134,11,0.4); font-size: 17px; line-height: 1.36; overflow-y: auto; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(184,134,11,0.6) transparent; }
         #lesson-reason .rtitle { color: var(--gold); letter-spacing: 1px; font-size: 14px; display: block; margin-bottom: 3px; }
         #lesson-box.coach #lesson-reason { display: block; }
         #lesson-text.again { animation: lesson-in 0.5s; }
@@ -482,8 +482,8 @@
         #lesson-btns { display: flex; gap: 10px; margin-top: 12px; justify-content: flex-end; flex-wrap: wrap; }
         #lesson-btns .btn { padding: 8px 18px; font-size: 17px; }
         #lesson-layout { margin-right: auto; padding: 6px 12px !important; font-size: 18px !important; line-height: 1; }
-        #lesson-box.wide #lesson-text { font-size: 16px; line-height: 1.34; }
-        #lesson-box.wide #lesson-reason { font-size: 15px; flex-basis: 42%; }
+        #lesson-box.wide #lesson-text { font-size: 17px; line-height: 1.34; }
+        #lesson-box.wide #lesson-reason { font-size: 16px; flex-basis: 40%; }
         .card.tut-in { animation: tut-card-in 0.42s cubic-bezier(.2,.8,.3,1); }
         .tut-row { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; gap: 4px; width: max-content; z-index: 30; }
         .tut-row .card { width: calc(var(--card-w) * 0.78); height: calc(var(--card-h) * 0.78); }
@@ -756,7 +756,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 05:44</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 05:59</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -3588,20 +3588,31 @@
         const GAP = 37;
         const z = parseFloat(document.body.style.zoom) || 1;
         const s = parseFloat((document.getElementById('board-scaler').style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1]);
-        const board = document.getElementById('game-board').getBoundingClientRect();
         const box = document.getElementById('lesson-box');
-        const bx = v => (board.left + v * s) / z, by = v => (board.top + v * s) / z;
-        const westLeft = bx(108), westBottom = by(543), labelBottom = by(402), handLeft = bx(278), plateBottom = by(794);
+        const cs = getComputedStyle(document.documentElement);
+        const cardW = parseFloat(cs.getPropertyValue('--card-w')) * s, cardH = parseFloat(cs.getPropertyValue('--card-h')) * s;
+        // Gemessen wird nur, was nicht vom Tischinhalt abhängt: Mitten und feste Kanten. Daraus die Lage bei vollen Händen.
+        const westArea = document.getElementById('west').getBoundingClientRect();
+        const westCards = document.querySelector('#west .cards').getBoundingClientRect();
+        const label = document.getElementById('trump-suit-name').getBoundingClientRect();
+        const hand = document.querySelector('#south .cards').getBoundingClientRect();
+        const plate = document.querySelector('#south .player-name').getBoundingClientRect();
+        const westCenterY = (westArea.top + westArea.height / 2) / z;
+        const westBottom = westCenterY + (cardH + 4 * (cardH - 85 * s)) / 2;          // Unterkante bei fünf Karten
+        const westLeft = westCards.left / z;
+        const labelBottom = label.bottom / z;
+        const handLeft = (hand.left + hand.width / 2) / z - (5 * cardW + 4 * 6 * s) / 2;  // linke Kante bei fünf Karten
+        const plateBottom = plate.bottom / z;
         const left = 24;
         box.style.left = left + 'px';
-        box.style.bottom = Math.max(8, Math.round(window.innerHeight / z - plateBottom)) + 'px';
+        box.style.bottom = Math.max(0, Math.round(window.innerHeight / z - plateBottom)) + 'px';
         box.style.maxHeight = '';
         if (lessonLayout === 'wide') {
-            box.style.width = Math.max(280, Math.round(handLeft - GAP - left)) + 'px';
-            box.style.height = Math.max(190, Math.round(plateBottom - westBottom - GAP)) + 'px';
+            box.style.width = Math.max(160, Math.round(handLeft - GAP - left)) + 'px';
+            box.style.height = Math.max(120, Math.round(plateBottom - westBottom - GAP)) + 'px';
         } else {
-            box.style.width = Math.max(280, Math.round(westLeft - GAP - left)) + 'px';
-            box.style.height = Math.max(220, Math.round(plateBottom - labelBottom - GAP)) + 'px';
+            box.style.width = Math.max(160, Math.round(westLeft - GAP - left)) + 'px';
+            box.style.height = Math.max(120, Math.round(plateBottom - labelBottom - GAP)) + 'px';
         }
         box.classList.toggle('wide', lessonLayout === 'wide');
         const tg = document.getElementById('lesson-layout'); if (tg) tg.title = T(lessonLayout === 'wide' ? 'box_tall' : 'box_wide');
