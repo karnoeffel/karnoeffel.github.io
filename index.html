@@ -425,7 +425,7 @@
 
         /* ---------- Prolog & Lehrstunde ---------- */
         #prologue {
-            position: fixed; inset: 0; z-index: 3000; display: none; background: #040302; color: var(--parchment);
+            position: fixed; inset: 0; z-index: 3000; display: flex; background: #040302; color: var(--parchment);
             font-family: 'Friedolin', serif; align-items: center; justify-content: center; text-align: center; padding: 24px; box-sizing: border-box;
         }
         #prologue::before {
@@ -468,9 +468,15 @@
             padding: 16px 20px 14px 20px; font-family: 'Friedolin', serif; color: var(--parchment); display: none;
         }
         #lesson-step { color: var(--gold); font-size: 14px; letter-spacing: 2px; margin-bottom: 6px; opacity: 0.85; }
-        #lesson-text { font-size: 18px; line-height: 1.42; min-height: 4.4em; animation: lesson-in 0.5s; overflow-y: auto; flex: 1 1 auto; }
-        #lesson-box.coach #lesson-text { font-size: 19px; line-height: 1.4; min-height: 0; }
+        #lesson-text { font-size: 18px; line-height: 1.42; min-height: 0; animation: lesson-in 0.5s; overflow-y: auto; flex: 1 1 auto; padding-right: 10px; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(184,134,11,0.6) transparent; }
+        #lesson-text::-webkit-scrollbar, #lesson-reason::-webkit-scrollbar { width: 6px; }
+        #lesson-text::-webkit-scrollbar-thumb, #lesson-reason::-webkit-scrollbar-thumb { background: rgba(184,134,11,0.55); }
+        #lesson-box.coach #lesson-text { font-size: 17px; line-height: 1.38; }
         #lesson-box.coach #lesson-step { margin-bottom: 2px; }
+        /* Unterste Zone im Begleitmodus: warum die letzte Runde so ausging - bleibt stehen, bis die nächste endet */
+        #lesson-reason { display: none; flex: 0 0 38%; margin-top: 8px; padding: 8px 10px 6px 0; border-top: 1px solid rgba(184,134,11,0.4); font-size: 16px; line-height: 1.36; overflow-y: auto; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(184,134,11,0.6) transparent; }
+        #lesson-reason .rtitle { color: var(--gold); letter-spacing: 1px; font-size: 14px; display: block; margin-bottom: 3px; }
+        #lesson-box.coach #lesson-reason { display: block; }
         #lesson-text.again { animation: lesson-in 0.5s; }
         @keyframes lesson-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         #lesson-btns { display: flex; gap: 10px; margin-top: 12px; justify-content: flex-end; flex-wrap: wrap; }
@@ -655,25 +661,6 @@
     </style>
 </head>
 <body>
-
-    <svg width="0" height="0" style="position:absolute;z-index:-1;">
-        <defs>
-            <filter id="rough-edge" x="-10%" y="-10%" width="120%" height="120%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="4" result="noise" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-            <filter id="rough-edge-card" x="-10%" y="-10%" width="120%" height="120%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="4" result="noise" />
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-        </defs>
-    </svg>
-
-    <div id="candle-light"></div>
-    <div id="candle-flicker"></div>
-
-    <button id="rules-toggle" data-i18n="rules_btn" onclick="document.getElementById('rules-modal').style.display='flex'">Regularium</button>
-
     <!-- ===== Prolog ===== -->
     <div id="prologue" onclick="prologueSkipTyping()">
         <div id="prologue-gate" onclick="event.stopPropagation(); prologueEnter()">
@@ -694,10 +681,30 @@
             </div>
         </div>
     </div>
+
+    <svg width="0" height="0" style="position:absolute;z-index:-1;">
+        <defs>
+            <filter id="rough-edge" x="-10%" y="-10%" width="120%" height="120%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="4" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+            <filter id="rough-edge-card" x="-10%" y="-10%" width="120%" height="120%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="4" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <div id="candle-light"></div>
+    <div id="candle-flicker"></div>
+
+    <button id="rules-toggle" data-i18n="rules_btn" onclick="document.getElementById('rules-modal').style.display='flex'">Regularium</button>
+
     <!-- ===== Lehrstunde ===== -->
     <div id="lesson-box">
         <div id="lesson-step"></div>
         <div id="lesson-text"></div>
+        <div id="lesson-reason"></div>
         <div id="lesson-btns">
             <button class="btn secondary" id="lesson-skip" data-i18n="tut_skip" onclick="tutorialEnd()">Genug gelernt</button>
             <button class="btn" id="lesson-next" data-i18n="tut_next" onclick="tutorialNext()">Weiter</button>
@@ -745,7 +752,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 04:46</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 05:16</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -3567,24 +3574,22 @@
     }
     // Der Kasten endet einen Finger breit vor der äußersten Handkarte
     function fitLessonBox() {
+        // Feste Geometrie aus dem Tischplan (nicht aus dem, was gerade auf dem Tisch liegt - sonst springt der Kasten):
+        // links neben dem Stapel von West, unter dem Trumpfblatt, unten bündig mit dem eigenen Namensschild. Abstand 36 px.
+        const GAP = 36;
         const z = parseFloat(document.body.style.zoom) || 1;
-        const s = (document.getElementById('board-scaler').style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1];
+        const s = parseFloat((document.getElementById('board-scaler').style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1]);
+        const board = document.getElementById('game-board').getBoundingClientRect();
         const box = document.getElementById('lesson-box');
-        const FINGER = 44;
-        // Rechts: bis einen Finger breit vor die eigenen Handkarten. Oben: einen Finger breit unter dem Stapel von West
-        // und unter dem Trumpfblatt. Unten: bündig mit dem Rahmen des eigenen Namensschilds.
-        const plate = document.querySelector('#south .player-name').getBoundingClientRect();
-        const hand = document.querySelector('#south .cards').getBoundingClientRect();
-        const west = document.querySelector('#west .cards').getBoundingClientRect();
-        const deck = document.getElementById('deck-area').getBoundingClientRect();
-        const handLeft = hand.width > 0 ? hand.left : (window.innerWidth / 2 - 300 * s * z);
-        const rightLimit = (handLeft / z) - FINGER;
-        box.style.width = Math.max(300, Math.min(560, rightLimit - 24)) + 'px';
-        if (plate.height > 0) {
-            const topLimit = Math.max(west.bottom, deck.bottom) / z + FINGER;
-            box.style.bottom = Math.max(8, Math.round((window.innerHeight - plate.bottom) / z)) + 'px';
-            box.style.maxHeight = Math.max(200, Math.round(plate.bottom / z - topLimit)) + 'px';
-        }
+        const westLeft = (board.left + 108 * s) / z;              // linke Kante des West-Stapels (voll)
+        const deckBottom = (board.top + 368 * s) / z;             // Unterkante des Trumpfblatts samt Beschriftung
+        const plateBottom = (board.top + 794 * s) / z;            // Unterkante des eigenen Namensschilds
+        const left = 24;
+        box.style.left = left + 'px';
+        box.style.width = Math.max(280, Math.round(westLeft - GAP - left)) + 'px';
+        box.style.bottom = Math.max(8, Math.round(window.innerHeight / z - plateBottom)) + 'px';
+        box.style.height = Math.max(220, Math.round(plateBottom - deckBottom - GAP)) + 'px';
+        box.style.maxHeight = '';
     }
     window.addEventListener('resize', () => { if (tut || coach) setTimeout(fitLessonBox, 50); });
     function tutClear() {
@@ -3840,7 +3845,8 @@
             else because = de ? (foeTrumps >= 2 ? 'Die Gegner hielten ' + foeTrumps + ' der vier echten Trümpfe und haben damit gestochen – dagegen hilft nur Zählen und Abwarten.' : (coach.mistakes > 0 ? 'Nicht die Karten waren es: ' + coach.mistakes + (coach.mistakes === 1 ? ' Zug war' : ' Züge waren') + ' verschenkt – sieh die Liste.' : 'Die Gegner hatten die höheren Farbkarten in den angespielten Farben; das Blatt war einfach dünn.')) : (foeTrumps >= 2 ? 'The enemy held ' + foeTrumps + ' of the four true trumps and used them – only counting and patience help against that.' : (coach.mistakes > 0 ? 'Not the cards: ' + coach.mistakes + (coach.mistakes === 1 ? ' play was' : ' plays were') + ' wasted – see the list.' : 'The enemy held the higher cards in the suits that were led; the hand was simply thin.'));
             coach.roundReason = '<b>' + (de ? 'Warum: ' : 'Why: ') + '</b>' + because + '<br>' + lines.join('<br>');
             const reason = document.getElementById('end-reason'); reason.innerHTML = coach.roundReason; reason.style.display = 'block';
-            coachSay(C(won ? 'round_won' : 'round_lost', { a: v.roundResult.tricks[0], b: v.roundResult.tricks[1], sum: C(won ? 'sum_good' : 'sum_bad') }) + '<br>' + coach.roundReason + '<br>' + C('next'));
+            document.getElementById('lesson-reason').innerHTML = '<span class="rtitle">' + (de ? (won ? 'Letzte Runde – gewonnen ' : 'Letzte Runde – verloren ') : (won ? 'Last round – won ' : 'Last round – lost ')) + v.roundResult.tricks[0] + ':' + v.roundResult.tricks[1] + '</span>' + coach.roundReason;
+            coachSay(C(won ? 'round_won' : 'round_lost', { a: v.roundResult.tricks[0], b: v.roundResult.tricks[1], sum: C(won ? 'sum_good' : 'sum_bad') }) + ' ' + C('next'));
         }
         if (v.phase !== 'roundEnd' && coach.stage === 'round') coach.roundReason = null;
     }
@@ -3850,12 +3856,13 @@
         role = 'solo';
         coach = { stage: 'start', rec: null, handDone: false, lastTrick: null, tricks: [], mistakes: 0, roundReason: null };
         const seats = [{ name: myName, kind: 'human' }, { name: BOT_NAMES[1], kind: 'bot' }, { name: C('name'), kind: 'bot' }, { name: BOT_NAMES[3], kind: 'bot' }];
-        game = new Game(seats, (seat, view) => { if (seat === 0) { renderView(view); coachObserve(view); if (!coach.fitted) { coach.fitted = true; setTimeout(fitLessonBox, 60); } } });
+        game = new Game(seats, (seat, view) => { if (seat === 0) { renderView(view); coachObserve(view); } });
         onLocalCard = card => game.submit(0, card);
         showScreen('game');
         document.getElementById('log-wrap').style.display = 'none';
         const box = document.getElementById('lesson-box'); box.style.display = 'flex'; box.style.width = ''; box.classList.add('coach');
         document.getElementById('lesson-step').textContent = C('name');
+        document.getElementById('lesson-reason').innerHTML = '<span class="rtitle">' + (LANG === 'de' ? 'Warum gewonnen, warum verloren' : 'Why won, why lost') + '</span>' + (LANG === 'de' ? 'Hier steht nach jeder Runde, Stich für Stich, warum sie so ausging.' : 'After every round this shows, trick by trick, why it went as it did.');
         document.getElementById('lesson-skip').textContent = T('coach_quit'); document.getElementById('lesson-skip').onclick = coachEnd;
         document.getElementById('lesson-next').style.display = 'none';
         fitLessonBox();
@@ -4169,6 +4176,7 @@
     (function init() {
         try { const n = localStorage.getItem('karnoeffel-name'); if (n) document.getElementById('name-input').value = n; } catch (e) {}
         if (prologueShouldRun()) { document.getElementById('prologue').style.display = 'flex'; document.getElementById('prologue-gate').style.display = 'flex'; }
+        else document.getElementById('prologue').style.display = 'none';
         const params = new URLSearchParams(location.search);
         if (params.get('tisch')) document.getElementById('code-input').value = params.get('tisch');
         applyLang();
