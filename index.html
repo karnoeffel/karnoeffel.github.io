@@ -481,6 +481,9 @@
         @keyframes lesson-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         #lesson-btns { display: flex; gap: 10px; margin-top: 12px; justify-content: flex-end; flex-wrap: wrap; }
         #lesson-btns .btn { padding: 8px 18px; font-size: 17px; }
+        #lesson-layout { margin-right: auto; padding: 6px 12px !important; font-size: 18px !important; line-height: 1; }
+        #lesson-box.wide #lesson-text { font-size: 16px; line-height: 1.34; }
+        #lesson-box.wide #lesson-reason { font-size: 15px; flex-basis: 42%; }
         .card.tut-in { animation: tut-card-in 0.42s cubic-bezier(.2,.8,.3,1); }
         .tut-row { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; gap: 4px; width: max-content; z-index: 30; }
         .tut-row .card { width: calc(var(--card-w) * 0.78); height: calc(var(--card-h) * 0.78); }
@@ -706,6 +709,7 @@
         <div id="lesson-text"></div>
         <div id="lesson-reason"></div>
         <div id="lesson-btns">
+            <button class="btn secondary" id="lesson-layout" onclick="toggleLessonLayout()" title="Ansicht wechseln">&#8597;</button>
             <button class="btn secondary" id="lesson-skip" data-i18n="tut_skip" onclick="tutorialEnd()">Genug gelernt</button>
             <button class="btn" id="lesson-next" data-i18n="tut_next" onclick="tutorialNext()">Weiter</button>
         </div>
@@ -752,7 +756,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 05:16</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 05:44</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -1096,6 +1100,7 @@
         de: {
             title: 'Karnöffel Online – Das Spiel der Landsknechte',
             rules_btn: 'Regularium', name_label: 'Dein Name am Tisch', name_ph: 'z. B. Jörg von Frundsberg',
+            box_wide: 'Breite Ansicht (unter dem West-Stapel)', box_tall: 'Hohe Ansicht (neben dem West-Stapel)',
             legal_imp: 'Impressum', legal_priv: 'Datenschutz', legal_disc: 'Hinweise zur Nutzung', legal_close: 'Zurück', rotate_hint: 'Bitte dreh das Gerät quer – so passt der Tisch auf den Schirm.',
             tut_btn: 'Beim alten Söldner lernen', tut_basic: 'Die Lehrstunde', tut_basic_sub: 'Regeln, Schritt für Schritt am Tisch', tut_coach: 'Ein Spiel an Konz\' Seite', tut_coach_sub: 'Echte Gegner – er sagt dir zu jeder Karte, was sie taugt', tut_next: 'Weiter', tut_skip: 'Genug gelernt', tut_done: 'Spiel an Konz\' Seite', coach_quit: 'Zum Startbild', tut_step: 'Lektion {n} von {m}', tut_pick: 'Wähle eine Karte.', tut_mentor: 'Konz (dein Gefährte)', tut_fellow: 'Gesell',
             gate_line: 'Eine ungemütliche Nacht im Jahre 1426.', gate_btn: 'Tritt ein', gate_sub: 'mit Ton',
@@ -1147,6 +1152,7 @@
         en: {
             title: 'Karnöffel Online – The Landsknechts\' Card Game',
             rules_btn: 'The Rules', name_label: 'Your name at the table', name_ph: 'e.g. Jörg von Frundsberg',
+            box_wide: 'Wide view (below the west stack)', box_tall: 'Tall view (beside the west stack)',
             legal_imp: 'Legal notice', legal_priv: 'Privacy', legal_disc: 'Terms of use', legal_close: 'Back', rotate_hint: 'Please turn your device sideways – the table needs the width.',
             tut_btn: 'Learn from the old soldier', tut_basic: 'The lesson', tut_basic_sub: 'The rules, step by step at the table', tut_coach: 'A game at Konz\'s side', tut_coach_sub: 'Real opponents – he tells you what each card is worth', tut_next: 'Go on', tut_skip: 'Enough learning', tut_done: 'A game at Konz\'s side', coach_quit: 'Back to start', tut_step: 'Lesson {n} of {m}', tut_pick: 'Choose a card.', tut_mentor: 'Konz (your partner)', tut_fellow: 'Fellow',
             gate_line: 'An inhospitable night in the year 1426.', gate_btn: 'Enter', gate_sub: 'with sound',
@@ -3573,23 +3579,37 @@
         tutorialNext();
     }
     // Der Kasten endet einen Finger breit vor der äußersten Handkarte
+    let lessonLayout = 'tall';
+    try { lessonLayout = localStorage.getItem('karnoeffel-kasten') || 'tall'; } catch (e) {}
     function fitLessonBox() {
-        // Feste Geometrie aus dem Tischplan (nicht aus dem, was gerade auf dem Tisch liegt - sonst springt der Kasten):
-        // links neben dem Stapel von West, unter dem Trumpfblatt, unten bündig mit dem eigenen Namensschild. Abstand 36 px.
-        const GAP = 36;
+        // Feste Geometrie aus dem Tischplan (nicht aus dem, was gerade liegt - sonst springt der Kasten). Abstand 37 px.
+        //  'tall': links neben dem West-Stapel, unter der Trumpfbeschriftung, bis zum eigenen Namensschild.
+        //  'wide': unter dem West-Stapel, bis vor die eigenen Handkarten, bis zum eigenen Namensschild.
+        const GAP = 37;
         const z = parseFloat(document.body.style.zoom) || 1;
         const s = parseFloat((document.getElementById('board-scaler').style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1]);
         const board = document.getElementById('game-board').getBoundingClientRect();
         const box = document.getElementById('lesson-box');
-        const westLeft = (board.left + 108 * s) / z;              // linke Kante des West-Stapels (voll)
-        const deckBottom = (board.top + 368 * s) / z;             // Unterkante des Trumpfblatts samt Beschriftung
-        const plateBottom = (board.top + 794 * s) / z;            // Unterkante des eigenen Namensschilds
+        const bx = v => (board.left + v * s) / z, by = v => (board.top + v * s) / z;
+        const westLeft = bx(108), westBottom = by(543), labelBottom = by(402), handLeft = bx(278), plateBottom = by(794);
         const left = 24;
         box.style.left = left + 'px';
-        box.style.width = Math.max(280, Math.round(westLeft - GAP - left)) + 'px';
         box.style.bottom = Math.max(8, Math.round(window.innerHeight / z - plateBottom)) + 'px';
-        box.style.height = Math.max(220, Math.round(plateBottom - deckBottom - GAP)) + 'px';
         box.style.maxHeight = '';
+        if (lessonLayout === 'wide') {
+            box.style.width = Math.max(280, Math.round(handLeft - GAP - left)) + 'px';
+            box.style.height = Math.max(190, Math.round(plateBottom - westBottom - GAP)) + 'px';
+        } else {
+            box.style.width = Math.max(280, Math.round(westLeft - GAP - left)) + 'px';
+            box.style.height = Math.max(220, Math.round(plateBottom - labelBottom - GAP)) + 'px';
+        }
+        box.classList.toggle('wide', lessonLayout === 'wide');
+        const tg = document.getElementById('lesson-layout'); if (tg) tg.title = T(lessonLayout === 'wide' ? 'box_tall' : 'box_wide');
+    }
+    function toggleLessonLayout() {
+        lessonLayout = lessonLayout === 'wide' ? 'tall' : 'wide';
+        try { localStorage.setItem('karnoeffel-kasten', lessonLayout); } catch (e) {}
+        fitLessonBox();
     }
     window.addEventListener('resize', () => { if (tut || coach) setTimeout(fitLessonBox, 50); });
     function tutClear() {
@@ -3814,7 +3834,8 @@
         else if (role.type === 'HALF_TRUMP') why = C('why_half');
         else why = C('why_high');
         const key = winnerPlay.seat === 0 ? 'trick_won_you' : winnerPlay.seat === 2 ? 'trick_won_partner' : 'trick_lost';
-        coach.tricks.push({ seat: winnerPlay.seat, card: wc, led: isWinnerFirstCard, why });
+        const mine = trick.find(p => p.seat === 0);
+        coach.tricks.push({ seat: winnerPlay.seat, card: wc, led: isWinnerFirstCard, why, mine: mine ? mine.card : null, ledCard: trick[0].card });
         coachSay(C(key, { name: v.seats[winnerPlay.seat].name, card: '<b>' + coachCard(wc, v.trump, isWinnerFirstCard) + '</b>', why }));
     }
     function coachHandVerdict(v) {
@@ -3837,7 +3858,13 @@
             const won = v.roundResult.team === 0;
             // Das Warum: Stich für Stich, wer ihn womit nahm - und was daraus folgt
             const de = LANG === 'de';
-            const lines = (coach.tricks || []).map((tr, i) => (i + 1) + '. ' + (tr.seat === 0 ? (de ? 'du' : 'you') : v.seats[tr.seat].name) + (de ? ' mit ' : ' with ') + '<b>' + coachCard(tr.card, v.trump, tr.led) + '</b>');
+            const lines = (coach.tricks || []).map((tr, i) => {
+                const who = tr.seat === 0 ? (de ? 'Du' : 'You') : v.seats[tr.seat].name;
+                let why = tr.why;
+                if (why === C('why_high')) why = de ? 'die höchste Karte der angespielten Farbe ' + suitName(tr.ledCard.suit) + ' – kein Trumpf fiel.' : 'the highest card of the suit led, ' + suitName(tr.ledCard.suit) + ' – no trump fell.';
+                const mine = tr.seat !== 0 && tr.mine ? ' ' + (de ? 'Du gabst ' : 'You gave ') + coachCard(tr.mine, v.trump, tr.ledCard === tr.mine) + '.' : '';
+                return (i + 1) + '. <b>' + who + '</b>' + (de ? ' nimmt mit ' : ' takes with ') + '<b>' + coachCard(tr.card, v.trump, tr.led) + '</b> – ' + why + mine;
+            });
             const foeTrumps = (coach.tricks || []).filter(tr => (tr.seat === 1 || tr.seat === 3) && tr.card.suit === v.trump && 'U762'.includes(tr.card.rank)).length;
             const ourTrumps = (coach.tricks || []).filter(tr => (tr.seat === 0 || tr.seat === 2) && tr.card.suit === v.trump && 'U762'.includes(tr.card.rank)).length;
             let because;
