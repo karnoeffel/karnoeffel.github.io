@@ -481,7 +481,8 @@
         @keyframes lesson-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         #lesson-btns { display: flex; gap: 10px; margin-top: 12px; justify-content: flex-end; flex-wrap: wrap; }
         #lesson-btns .btn { padding: 8px 18px; font-size: 17px; }
-        #lesson-layout { margin-right: auto; width: 46px; padding: 0 !important; font-size: 20px !important; line-height: 1; display: flex; align-items: center; justify-content: center; }
+        #lesson-layout { margin-right: auto; width: 46px; padding: 0 !important; line-height: 0; display: flex; align-items: center; justify-content: center; }
+        #lesson-layout svg { display: block; }
         #lesson-box.wide #lesson-text { font-size: 17px; line-height: 1.34; }
         #lesson-box.wide #lesson-reason { font-size: 16px; flex-basis: 30%; }
         #lesson-step { flex: 0 0 auto; }
@@ -710,7 +711,7 @@
         <div id="lesson-text"></div>
         <div id="lesson-reason"></div>
         <div id="lesson-btns">
-            <button class="btn secondary" id="lesson-layout" onclick="toggleLessonLayout()" title="Ansicht wechseln">&#8596;</button>
+            <button class="btn secondary" id="lesson-layout" onclick="toggleLessonLayout()" title="Ansicht wechseln"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg></button>
             <button class="btn secondary" id="lesson-skip" data-i18n="tut_skip" onclick="tutorialEnd()">Genug gelernt</button>
             <button class="btn" id="lesson-next" data-i18n="tut_next" onclick="tutorialNext()">Weiter</button>
         </div>
@@ -757,7 +758,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 06:17</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 06:32</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -3616,7 +3617,7 @@
             box.style.height = Math.max(120, Math.round(plateBottom - labelBottom - GAP)) + 'px';
         }
         box.classList.toggle('wide', lessonLayout === 'wide');
-        const tg = document.getElementById('lesson-layout'); if (tg) { tg.title = T(lessonLayout === 'wide' ? 'box_tall' : 'box_wide'); tg.innerHTML = lessonLayout === 'wide' ? '&#8597;' : '&#8596;'; }
+        const tg = document.getElementById('lesson-layout'); if (tg) { tg.title = T(lessonLayout === 'wide' ? 'box_tall' : 'box_wide'); tg.innerHTML = lessonLayout === 'wide' ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>' : '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>'; }
     }
     function toggleLessonLayout() {
         lessonLayout = lessonLayout === 'wide' ? 'tall' : 'wide';
