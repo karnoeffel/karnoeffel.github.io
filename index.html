@@ -474,16 +474,17 @@
         #lesson-box.coach #lesson-text { font-size: 18px; line-height: 1.38; }
         #lesson-box.coach #lesson-step { margin-bottom: 2px; }
         /* Unterste Zone im Begleitmodus: warum die letzte Runde so ausging - bleibt stehen, bis die nächste endet */
-        #lesson-reason { display: none; flex: 0 0 38%; margin-top: 8px; padding: 8px 10px 6px 0; border-top: 1px solid rgba(184,134,11,0.4); font-size: 17px; line-height: 1.36; overflow-y: auto; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(184,134,11,0.6) transparent; }
+        #lesson-reason { display: none; box-sizing: border-box; flex: 0 0 26%; margin-top: 8px; padding: 8px 10px 6px 0; border-top: 1px solid rgba(184,134,11,0.4); font-size: 17px; line-height: 1.36; overflow-y: auto; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(184,134,11,0.6) transparent; }
         #lesson-reason .rtitle { color: var(--gold); letter-spacing: 1px; font-size: 14px; display: block; margin-bottom: 3px; }
         #lesson-box.coach #lesson-reason { display: block; }
         #lesson-text.again { animation: lesson-in 0.5s; }
         @keyframes lesson-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         #lesson-btns { display: flex; gap: 10px; margin-top: 12px; justify-content: flex-end; flex-wrap: wrap; }
         #lesson-btns .btn { padding: 8px 18px; font-size: 17px; }
-        #lesson-layout { margin-right: auto; padding: 6px 12px !important; font-size: 18px !important; line-height: 1; }
+        #lesson-layout { margin-right: auto; width: 46px; padding: 0 !important; font-size: 20px !important; line-height: 1; display: flex; align-items: center; justify-content: center; }
         #lesson-box.wide #lesson-text { font-size: 17px; line-height: 1.34; }
-        #lesson-box.wide #lesson-reason { font-size: 16px; flex-basis: 40%; }
+        #lesson-box.wide #lesson-reason { font-size: 16px; flex-basis: 30%; }
+        #lesson-step { flex: 0 0 auto; }
         .card.tut-in { animation: tut-card-in 0.42s cubic-bezier(.2,.8,.3,1); }
         .tut-row { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; gap: 4px; width: max-content; z-index: 30; }
         .tut-row .card { width: calc(var(--card-w) * 0.78); height: calc(var(--card-h) * 0.78); }
@@ -709,7 +710,7 @@
         <div id="lesson-text"></div>
         <div id="lesson-reason"></div>
         <div id="lesson-btns">
-            <button class="btn secondary" id="lesson-layout" onclick="toggleLessonLayout()" title="Ansicht wechseln">&#8597;</button>
+            <button class="btn secondary" id="lesson-layout" onclick="toggleLessonLayout()" title="Ansicht wechseln">&#8596;</button>
             <button class="btn secondary" id="lesson-skip" data-i18n="tut_skip" onclick="tutorialEnd()">Genug gelernt</button>
             <button class="btn" id="lesson-next" data-i18n="tut_next" onclick="tutorialNext()">Weiter</button>
         </div>
@@ -756,7 +757,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 05:59</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-14 06:17</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -3615,7 +3616,7 @@
             box.style.height = Math.max(120, Math.round(plateBottom - labelBottom - GAP)) + 'px';
         }
         box.classList.toggle('wide', lessonLayout === 'wide');
-        const tg = document.getElementById('lesson-layout'); if (tg) tg.title = T(lessonLayout === 'wide' ? 'box_tall' : 'box_wide');
+        const tg = document.getElementById('lesson-layout'); if (tg) { tg.title = T(lessonLayout === 'wide' ? 'box_tall' : 'box_wide'); tg.innerHTML = lessonLayout === 'wide' ? '&#8597;' : '&#8596;'; }
     }
     function toggleLessonLayout() {
         lessonLayout = lessonLayout === 'wide' ? 'tall' : 'wide';
