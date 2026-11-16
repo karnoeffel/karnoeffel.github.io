@@ -383,23 +383,24 @@
         #rank-btn { position: absolute; top: calc(100% + 58px); left: 50%; transform: translateX(-50%); font-size: 15px; padding: 4px 9px; letter-spacing: 1px; white-space: nowrap; opacity: 0.85; }
         #rank-btn.open, #rank-btn:hover { opacity: 1; }
         #deck-area:has(#rank-panel.open) { z-index: 40; }   /* die Tafel liegt über der eigenen Hand */
-        /* Rangtafel: wer sticht wen - zum Nachschlagen während des Spiels */
+        /* Rangtafel: wer sticht wen - nur in der Lehre und im begleiteten Spiel; liegt oben am Tisch, über keinem Kasten */
         #rank-panel {
-            display: none; position: absolute; top: -236px; left: calc(100% + 26px); width: 640px; z-index: 60;
+            display: none; position: absolute; top: -292px; left: calc(100% + 8px); width: 882px; z-index: 60;
             background: rgba(14, 9, 5, 0.96); border: 2px solid var(--gold); box-shadow: 0 8px 24px rgba(0,0,0,0.9), inset 0 0 25px rgba(0,0,0,1);
-            padding: 10px 16px 10px; box-sizing: border-box; color: var(--parchment); font-size: 17px; line-height: 20px;
+            padding: 10px 16px 10px; box-sizing: border-box; color: var(--parchment); font-size: 15.5px; line-height: 19px;
+            grid-template-columns: 500px 1fr; column-gap: 12px;
         }
-        #rank-panel.open { display: block; }
-        #rank-panel h4 { margin: 0 0 6px; font-size: 19px; color: var(--gold); letter-spacing: 1px; font-weight: normal; }
-        .rank-row { display: flex; align-items: center; gap: 10px; margin: 0; height: 42px; }
-        .rank-row .card { width: 26px; height: 40px; flex: none; filter: none; box-shadow: 2px 3px 6px rgba(0,0,0,0.9); border-radius: 2px; }
-        .rank-row .rk { width: 128px; flex: none; color: var(--gold); white-space: nowrap; }
+        #rank-panel.open { display: grid; }
+        #rank-panel h4 { margin: 0 0 4px; font-size: 18px; color: var(--gold); letter-spacing: 1px; font-weight: normal; }
+        .rank-row { display: flex; align-items: center; gap: 8px; margin: 0; height: 32px; }
+        .rank-row .card { width: 20px; height: 31px; flex: none; filter: none; box-shadow: 2px 3px 6px rgba(0,0,0,0.9); border-radius: 2px; }
+        .rank-row .rk { width: 104px; flex: none; color: var(--gold); white-space: nowrap; }
         .rank-row .rt { color: #d8c7a9; white-space: nowrap; }
-        .rank-plain { display: flex; align-items: center; gap: 3px; margin: 4px 0 2px; }
-        .rank-plain .card { width: 26px; height: 40px; flex: none; filter: none; box-shadow: 1px 2px 4px rgba(0,0,0,0.9); border-radius: 2px; }
-        .rank-plain .gt { color: var(--gold); font-size: 14px; }
-        .rank-note { color: rgba(216,199,169,0.85); font-size: 15px; line-height: 18px; margin-top: 5px; }
-        #rank-panel hr { border: none; border-top: 1px solid rgba(184,134,11,0.35); margin: 8px 0 6px; }
+        .rank-plain { display: flex; align-items: center; gap: 1px; margin: 4px 0 6px; }
+        .rank-plain .card { width: 19px; height: 29px; flex: none; filter: none; box-shadow: 1px 2px 4px rgba(0,0,0,0.9); border-radius: 2px; }
+        .rank-plain .gt { color: var(--gold); font-size: 11px; }
+        .rank-note { color: rgba(216,199,169,0.85); font-size: 14.5px; line-height: 17px; margin-top: 6px; }
+        .rank-col { min-width: 0; }
 
         #log {
             width: 100%; height: 156px;
@@ -551,6 +552,8 @@
         .trick-slot .card.quiz:hover { transform: translateY(-6px) scale(1.04); box-shadow: 0 0 0 2px var(--gold), 4px 8px 16px rgba(0,0,0,0.9); }
         .tut-row { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; gap: 4px; width: max-content; z-index: 30; }
         .tut-row .card { width: calc(var(--card-w) * 0.78); height: calc(var(--card-h) * 0.78); }
+        #west .player-name, #east .player-name { transition: opacity 0.4s; }
+        body.tut-row-shown #west .player-name, body.tut-row-shown #east .player-name { opacity: 0; }
         @keyframes tut-card-in { from { opacity: 0; transform: translateY(-40px) scale(0.85) rotate(-6deg); } to { opacity: 1; transform: none; } }
         .card.glow { box-shadow: 0 0 16px 6px rgba(255, 196, 70, 0.9), 0 0 40px 10px rgba(255, 160, 40, 0.45) !important; transition: box-shadow 0.5s; z-index: 20; }
         .card.dead { filter: grayscale(1) brightness(0.55) !important; opacity: 0.65; transition: filter 0.8s, opacity 0.8s; }
@@ -826,7 +829,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-16 07:01</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-16 12:51</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -1175,7 +1178,7 @@
             box_wide: 'Breite Ansicht (unter dem West-Stapel)', box_tall: 'Hohe Ansicht (neben dem West-Stapel)',
             legal_imp: 'Impressum', legal_priv: 'Datenschutz', legal_disc: 'Hinweise zur Nutzung', legal_close: 'Zurück', rotate_hint: 'Bitte dreh das Gerät quer – so passt der Tisch auf den Schirm.',
             rank_btn: 'Rangfolge', rank_trump: 'Trumpf: {suit} – wer sticht wen', rank_plain: 'In jeder anderen Farbe', rank_plain_note: 'Es gewinnt die höchste Karte der angespielten Farbe; eine fremde Farbe gewinnt nur als Trumpf. Farbzwang gibt es nicht.',
-            rank_rows: [['U', 'Karnöffel', 'sticht alles – nichts schlägt ihn'], ['7', 'Teufel', 'angespielt unschlagbar – nachgeworfen nur eine 7'], ['6', 'Papst', 'sticht alles außer Karnöffel und angespieltem Teufel'], ['2', 'Kaiser', 'sticht jede gewöhnliche Karte, auch den König'], ['3', 'halber Trumpf', 'sticht bis zum Ober – keinen König'], ['4', 'halber Trumpf', 'sticht bis zum Unter – keinen Ober, keinen König'], ['5', 'halber Trumpf', 'sticht bis zum Banner – nicht Unter, Ober, König']],
+            rank_rows: [['U', 'Karnöffel', 'sticht alles – nichts schlägt ihn'], ['7', 'Teufel', 'angespielt unschlagbar – sonst nur eine 7'], ['6', 'Papst', 'sticht alles außer Karnöffel und angespieltem Teufel'], ['2', 'Kaiser', 'sticht jede gewöhnliche Karte, auch den König'], ['3', 'halber Trumpf', 'sticht bis zum Ober – keinen König'], ['4', 'halber Trumpf', 'sticht bis zum Unter – keinen Ober, keinen König'], ['5', 'halber Trumpf', 'sticht bis zum Banner – nicht Unter, Ober, König']],
             rank_dead: 'König, Ober, Banner, 9 und 8 der Trumpffarbe sind keine Trümpfe – gewöhnliche Karten.',
             rank_king: 'Der König ist die höchste gewöhnliche Karte – nur Karnöffel, angespielter Teufel, Papst und Kaiser nehmen ihn; kein halber Trumpf.',
             rotate_force: 'Trotzdem quer anzeigen', hint_card: '{card}: {what}',
@@ -1232,7 +1235,7 @@
             box_wide: 'Wide view (below the west stack)', box_tall: 'Tall view (beside the west stack)',
             legal_imp: 'Legal notice', legal_priv: 'Privacy', legal_disc: 'Terms of use', legal_close: 'Back', rotate_hint: 'Please turn your device sideways – the table needs the width.',
             rank_btn: 'Ranking', rank_trump: 'Trumps: {suit} – who beats whom', rank_plain: 'In every other suit', rank_plain_note: 'The highest card of the suit led wins; another suit wins only as a trump. No obligation to follow suit.',
-            rank_rows: [['U', 'Karnöffel', 'beats everything – nothing beats it'], ['7', 'Devil', 'unbeatable when led – thrown in, a mere 7'], ['6', 'Pope', 'beats all but Karnöffel and a led Devil'], ['2', 'Emperor', 'beats any ordinary card, the King included'], ['3', 'half-trump', 'beats up to the Ober – no King'], ['4', 'half-trump', 'beats up to the Unter – no Ober, no King'], ['5', 'half-trump', 'beats up to the Banner – not Unter, Ober, King']],
+            rank_rows: [['U', 'Karnöffel', 'beats everything – nothing beats it'], ['7', 'Devil', 'unbeatable when led – otherwise a mere 7'], ['6', 'Pope', 'beats all but Karnöffel and a led Devil'], ['2', 'Emperor', 'beats any ordinary card, the King included'], ['3', 'half-trump', 'beats up to the Ober – no King'], ['4', 'half-trump', 'beats up to the Unter – no Ober, no King'], ['5', 'half-trump', 'beats up to the Banner – not Unter, Ober, King']],
             rank_dead: 'King, Ober, Banner, 9 and 8 of the trump suit are no trumps – ordinary cards like in any suit.',
             rank_king: 'The King is the highest ordinary card – only Karnöffel, led Devil, Pope and Emperor take him; no half-trump can.',
             rotate_force: 'Show sideways anyway', hint_card: '{card}: {what}',
@@ -3224,23 +3227,24 @@
     function renderRankPanel(trump) {
         const panel = document.getElementById('rank-panel'); panel.innerHTML = '';
         if (!trump) return;
-        const h = document.createElement('h4'); h.textContent = T('rank_trump', { suit: suitName(trump) }); panel.appendChild(h);
+        const colA = document.createElement('div'); colA.className = 'rank-col'; const colB = document.createElement('div'); colB.className = 'rank-col';
+        panel.appendChild(colA); panel.appendChild(colB);
+        const h = document.createElement('h4'); h.textContent = T('rank_trump', { suit: suitName(trump) }); colA.appendChild(h);
         T('rank_rows').forEach(([rank, name, what]) => {
             const row = document.createElement('div'); row.className = 'rank-row';
             row.appendChild(miniCard(trump, rank));
             const rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = name; row.appendChild(rk);
             const rt = document.createElement('span'); rt.className = 'rt'; rt.textContent = what; row.appendChild(rt);
-            panel.appendChild(row);
+            colA.appendChild(row);
         });
-        const dead = document.createElement('div'); dead.className = 'rank-note'; dead.textContent = T('rank_dead'); panel.appendChild(dead);
-        panel.appendChild(document.createElement('hr'));
-        const h2 = document.createElement('h4'); h2.textContent = T('rank_plain'); panel.appendChild(h2);
+        const dead = document.createElement('div'); dead.className = 'rank-note'; dead.textContent = T('rank_dead'); colA.appendChild(dead);
+        const h2 = document.createElement('h4'); h2.textContent = T('rank_plain'); colB.appendChild(h2);
         const other = SUITS.find(s => s.id !== trump).id;
         const line = document.createElement('div'); line.className = 'rank-plain';
         ['K', 'O', 'U', '10', '9', '8', '7', '6', '5', '4', '3', '2'].forEach((r, i) => { if (i) { const g = document.createElement('span'); g.className = 'gt'; g.textContent = '>'; line.appendChild(g); } line.appendChild(miniCard(other, r)); });
-        panel.appendChild(line);
-        const king = document.createElement('div'); king.className = 'rank-note'; king.textContent = T('rank_king'); panel.appendChild(king);
-        const note = document.createElement('div'); note.className = 'rank-note'; note.textContent = T('rank_plain_note'); panel.appendChild(note);
+        colB.appendChild(line);
+        const king = document.createElement('div'); king.className = 'rank-note'; king.textContent = T('rank_king'); colB.appendChild(king);
+        const note = document.createElement('div'); note.className = 'rank-note'; note.textContent = T('rank_plain_note'); colB.appendChild(note);
     }
     function toggleRankPanel(force) {
         rankOpen = typeof force === 'boolean' ? force : !rankOpen;
@@ -3303,7 +3307,8 @@
         if (v.trumpCard) tc.appendChild(createCardElement(v.trumpCard));
         document.getElementById('trump-suit-name').textContent = v.trump ? suitName(v.trump) : '';
         if (v.trump !== lastRankTrump || LANG !== lastRankLang) { lastRankTrump = v.trump; lastRankLang = LANG; renderRankPanel(v.trump); }
-        document.getElementById('rank-btn').style.display = v.trump ? '' : 'none';
+        document.getElementById('rank-btn').style.display = v.trump && (coach || tut) ? '' : 'none';   // nur, wo Konz lehrt
+        if (!(coach || tut) && rankOpen) toggleRankPanel(false);
         // Punkte
         const my = teamOf(you), foe = 1 - my;
         document.getElementById('score-label-we').textContent = `${v.seats[you].name} & ${v.seats[(you + 2) % 4].name}:`;
@@ -4124,6 +4129,7 @@
     }
     window.addEventListener('resize', () => { if (tut || coach) setTimeout(fitLessonBox, 50); });
     function tutClear() {
+        document.body.classList.remove('tut-row-shown');
         for (let i = 0; i < 4; i++) document.querySelector(`.trick-slot[data-pos="${i}"]`).innerHTML = '';
         PLAYER_IDS.forEach(id => document.querySelector(`#${id} .cards`).innerHTML = '');
         document.querySelectorAll('.face-up-deal, .tut-row').forEach(e => e.remove());
@@ -4159,6 +4165,7 @@
             // Eine Reihe Karten quer über die Tischmitte, von links nach rechts, die wertlosen grau
             const slot = document.querySelector('.trick-slot[data-pos="2"]');
             const rowEl = document.createElement('div'); rowEl.className = 'tut-row'; slot.appendChild(rowEl);
+            document.body.classList.add('tut-row-shown');   // die Namen links und rechts weichen der Kartenreihe aus
             for (let k = 0; k < s.row.length; k++) {
                 const el = createCardElement(s.row[k]); el.classList.add('tut-in'); if (s.rowDead !== undefined && k >= s.rowDead) el.classList.add('dead'); if (s.rowGlow === k) { el.classList.add('glow'); el.style.marginRight = '18px'; } rowEl.appendChild(el);
                 playCardThrowSound(k % 4, 0.5); await sleep(180);
@@ -4220,6 +4227,7 @@
         }
     }
     function tutorialEnd() {
+        document.body.classList.remove('tut-row-shown');
         tut = null;
         tutClear();
         document.getElementById('lesson-box').style.display = 'none';
