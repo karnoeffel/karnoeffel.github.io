@@ -832,7 +832,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-16 14:59</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-16 15:40</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -4798,7 +4798,9 @@
     }
     function inviteLink() {
         const code = document.getElementById('lobby-code').textContent.trim();
-        const u = new URL(location.href); u.search = ''; u.searchParams.set('tisch', code);
+        // Läuft das Spiel eingebettet (itch.io und ähnliche Portale), zeigt der Einladungslink auf die eigene Seite - dort ist er kurz und bleibt gültig
+        const home = /itch\.zone|itch\.io|newgrounds|gamejolt|crazygames|poki/.test(location.hostname) ? 'https://karnoeffel.github.io/' : location.href;
+        const u = new URL(home); u.search = ''; u.hash = ''; u.searchParams.set('tisch', code);
         const v = new URLSearchParams(location.search).get('vermittler'); if (v) u.searchParams.set('vermittler', v);
         u.searchParams.set('lang', LANG);
         return u.toString();
