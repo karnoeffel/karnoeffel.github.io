@@ -214,7 +214,7 @@
 
         #score-wrap {
             position: fixed;
-            top: 10px; right: 10px;
+            top: 20px; right: 10px;
             display: none; flex-direction: column; gap: 8px;
             z-index: 1000;
         }
@@ -388,18 +388,18 @@
             display: none; position: absolute; top: -292px; left: calc(100% + 8px); width: 882px; z-index: 60;
             background: rgba(14, 9, 5, 0.96); border: 2px solid var(--gold); box-shadow: 0 8px 24px rgba(0,0,0,0.9), inset 0 0 25px rgba(0,0,0,1);
             padding: 10px 16px 10px; box-sizing: border-box; color: var(--parchment); font-size: 15.5px; line-height: 19px;
-            grid-template-columns: 500px 1fr; column-gap: 12px;
+            grid-template-columns: 528px 1fr; column-gap: 12px;
         }
         #rank-panel.open { display: grid; }
         #rank-panel h4 { margin: 0 0 4px; font-size: 18px; color: var(--gold); letter-spacing: 1px; font-weight: normal; }
-        .rank-row { display: flex; align-items: center; gap: 8px; margin: 0; height: 32px; }
-        .rank-row .card { width: 20px; height: 31px; flex: none; filter: none; box-shadow: 2px 3px 6px rgba(0,0,0,0.9); border-radius: 2px; }
+        .rank-row { display: flex; align-items: center; gap: 10px; margin: 0; height: 56px; }
+        .rank-row .card, .rank-plain .card { width: 35px; height: 53px; flex: none; filter: none; box-shadow: 2px 3px 6px rgba(0,0,0,0.9); border-radius: 2px; transition: transform 0.15s; transform-origin: left center; position: relative; }
+        .rank-row .card:hover, .rank-plain .card:hover { transform: scale(2.6); z-index: 5; box-shadow: 0 0 0 1px var(--gold), 6px 10px 24px rgba(0,0,0,0.95); }   /* zum Nachsehen: groß beim Überfahren */
         .rank-row .rk { width: 104px; flex: none; color: var(--gold); white-space: nowrap; }
         .rank-row .rt { color: #d8c7a9; white-space: nowrap; }
-        .rank-plain { display: flex; align-items: center; gap: 1px; margin: 4px 0 6px; }
-        .rank-plain .card { width: 19px; height: 29px; flex: none; filter: none; box-shadow: 1px 2px 4px rgba(0,0,0,0.9); border-radius: 2px; }
-        .rank-plain .gt { color: var(--gold); font-size: 11px; }
-        .rank-note { color: rgba(216,199,169,0.85); font-size: 14.5px; line-height: 17px; margin-top: 6px; }
+        .rank-plain { display: flex; align-items: center; gap: 4px; margin: 2px 0 4px; }
+        .rank-plain .gt { color: var(--gold); font-size: 14px; width: 10px; text-align: center; }
+        .rank-note { color: rgba(216,199,169,0.85); font-size: 14.5px; line-height: 17px; margin-top: 8px; }
         .rank-col { min-width: 0; }
 
         #log {
@@ -504,6 +504,8 @@
         #gate-inner .btn { display: block; margin: 0 auto; }
         #gate-line { font-size: clamp(20px, 2.6vw, 30px); color: var(--parchment); margin-bottom: 26px; opacity: 0.85; letter-spacing: 1px; }
         #gate-sub { margin-top: 10px; font-size: 14px; color: rgba(216,199,169,0.45); letter-spacing: 2px; }
+        #gate-langs { margin-top: 42px; justify-content: center; cursor: default; }
+        #gate-langs .lang-btn { font-size: 15px; padding: 5px 12px; }
         #prologue-gate.fade { animation: prologue-out 0.9s forwards; pointer-events: none; }
         /* Größe: eine einzige gleichmäßige Bewegung nach vorn (linear). Das Flackern liegt getrennt auf der Hülle. */
         #prologue-logo .logo-flicker { opacity: 0; animation: logo-flicker 5.2s linear forwards; }
@@ -739,6 +741,7 @@
                 <div id="gate-line" data-i18n="gate_line">Eine ungemütliche Nacht im Jahre 1426.</div>
                 <button class="btn" data-i18n="gate_btn">Tritt ein</button>
                 <div id="gate-sub" data-i18n="gate_sub">mit Ton</div>
+                <div class="lang-btns" id="gate-langs" onclick="event.stopPropagation()"><button class="small-btn lang-btn gate-lang" data-lang="de" onclick="setLang('de')">Deutsch</button><button class="small-btn lang-btn gate-lang" data-lang="en" onclick="setLang('en')">English</button></div>
             </div>
         </div>
         <canvas id="storm-canvas"></canvas>
@@ -829,7 +832,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-16 12:51</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-16 13:23</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -1309,6 +1312,7 @@
         document.getElementById('rules-en').style.display = LANG === 'en' ? 'block' : 'none';
         document.getElementById('lang-de').classList.toggle('active', LANG === 'de');
         document.getElementById('lang-en').classList.toggle('active', LANG === 'en');
+        document.querySelectorAll('.gate-lang').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
         const mt = document.getElementById('mood-toggle'); if (mt) mt.textContent = T('moods')[typeof currentMoodIdx === 'number' ? currentMoodIdx : 0];
         const mu = document.getElementById('music-toggle'); if (mu) mu.textContent = T(typeof isMusicPlaying !== 'undefined' && isMusicPlaying ? 'music_on' : 'music_off');
         if (typeof currentView !== 'undefined' && currentView) renderView(currentView);
@@ -3240,13 +3244,31 @@
         const dead = document.createElement('div'); dead.className = 'rank-note'; dead.textContent = T('rank_dead'); colA.appendChild(dead);
         const h2 = document.createElement('h4'); h2.textContent = T('rank_plain'); colB.appendChild(h2);
         const other = SUITS.find(s => s.id !== trump).id;
-        const line = document.createElement('div'); line.className = 'rank-plain';
-        ['K', 'O', 'U', '10', '9', '8', '7', '6', '5', '4', '3', '2'].forEach((r, i) => { if (i) { const g = document.createElement('span'); g.className = 'gt'; g.textContent = '>'; line.appendChild(g); } line.appendChild(miniCard(other, r)); });
-        colB.appendChild(line);
+        [['K', 'O', 'U', '10', '9', '8'], ['7', '6', '5', '4', '3', '2']].forEach((ranks, li) => {
+            const line = document.createElement('div'); line.className = 'rank-plain';
+            ranks.forEach((r, i) => { if (i || li) { const g = document.createElement('span'); g.className = 'gt'; g.textContent = '>'; line.appendChild(g); } line.appendChild(miniCard(other, r)); });
+            colB.appendChild(line);
+        });
         const king = document.createElement('div'); king.className = 'rank-note'; king.textContent = T('rank_king'); colB.appendChild(king);
         const note = document.createElement('div'); note.className = 'rank-note'; note.textContent = T('rank_plain_note'); colB.appendChild(note);
     }
+    function boardScale() { return parseFloat((document.getElementById('board-scaler').style.transform.match(/scale\(([\d.]+)\)/) || [0, 1])[1]) || 1; }
+    function placeRankUi() {
+        const deck = document.getElementById('deck-area'), btn = document.getElementById('rank-btn'), panel = document.getElementById('rank-panel');
+        if (!deck || getComputedStyle(deck).display === 'none') return;
+        const s = boardScale(), d = lrect(deck);
+        const ref = lrect(document.getElementById('rules-toggle'));              // oben bündig mit Regularium (und Punktekasten)
+        panel.style.top = Math.round((ref.top - d.top) / s) + 'px';
+        const westArea = lrect(document.getElementById('west'));
+        const cardH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-h')) * s;
+        const bottom = westArea.top + westArea.height / 2 + (cardH + 4 * (cardH - 85 * s)) / 2;   // Unterkante des Stapels bei fünf Karten - auch wenn er gerade leer ist
+        const disp = btn.style.display; btn.style.display = ''; const bh = lrect(btn).height / s; btn.style.display = disp;
+        const newTop = Math.round((bottom - d.top) / s - bh - 5) + 'px';   // die Karten tragen einen Schatten, der nicht mitzählt
+        if (btn.style.top !== newTop) { btn.style.top = newTop; if (coach || tut) setTimeout(fitLessonBox, 0); }   // der Kasten richtet sich nach dem Knopf
+    }
+    window.addEventListener('resize', () => setTimeout(placeRankUi, 60));
     function toggleRankPanel(force) {
+        placeRankUi();
         rankOpen = typeof force === 'boolean' ? force : !rankOpen;
         document.getElementById('rank-panel').classList.toggle('open', rankOpen);
         document.getElementById('rank-btn').classList.toggle('open', rankOpen);
@@ -3308,6 +3330,7 @@
         document.getElementById('trump-suit-name').textContent = v.trump ? suitName(v.trump) : '';
         if (v.trump !== lastRankTrump || LANG !== lastRankLang) { lastRankTrump = v.trump; lastRankLang = LANG; renderRankPanel(v.trump); }
         document.getElementById('rank-btn').style.display = v.trump && (coach || tut) ? '' : 'none';   // nur, wo Konz lehrt
+        if (v.trump && (coach || tut)) placeRankUi();
         if (!(coach || tut) && rankOpen) toggleRankPanel(false);
         // Punkte
         const my = teamOf(you), foe = 1 - my;
@@ -4150,7 +4173,7 @@
         nextBtn.textContent = s.last ? T(tut.course === 2 ? 'tut_done' : 'tut_to_school') : T('tut_next');
         tutClear();
         document.getElementById('rank-btn').style.display = s.trump ? '' : 'none';
-        if (s.trump) { document.getElementById('trump-card').appendChild(createCardElement(K(TUT_TRUMP, '6'))); document.getElementById('trump-suit-name').textContent = suitName(TUT_TRUMP); if (lastRankTrump !== TUT_TRUMP || lastRankLang !== LANG) { lastRankTrump = TUT_TRUMP; lastRankLang = LANG; renderRankPanel(TUT_TRUMP); } }
+        if (s.trump) { document.getElementById('trump-card').appendChild(createCardElement(K(TUT_TRUMP, '6'))); document.getElementById('trump-suit-name').textContent = suitName(TUT_TRUMP); if (lastRankTrump !== TUT_TRUMP || lastRankLang !== LANG) { lastRankTrump = TUT_TRUMP; lastRankLang = LANG; renderRankPanel(TUT_TRUMP); } placeRankUi(); }
         if (s.backs) [1, 2, 3].forEach(pos => { const c = document.querySelector(`#${PLAYER_IDS[pos]} .cards`); for (let k = 0; k < 5; k++) c.appendChild(createCardElement({ back: (pos * 3 + k) % 8 }, true)); });
         if (s.hand) {
             const c = document.querySelector('#south .cards');
