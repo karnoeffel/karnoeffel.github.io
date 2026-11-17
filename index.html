@@ -839,7 +839,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 16:02</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 16:15</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -1352,6 +1352,7 @@
     try { const st = JSON.parse(localStorage.getItem('karnoeffel-tier') || 'null'); if (st && typeof st.tier === 'number') SOUND_TIER = (Date.now() - st.t > 3 * 86400000) ? Math.max(0, st.tier - 1) : st.tier; } catch (e) {}
     try { const q = new URLSearchParams(location.search).get('klang'); if (q !== null) SOUND_TIER = Math.max(0, Math.min(3, parseInt(q, 10) || 0)); } catch (e) {}
     function saveTier() { try { localStorage.setItem('karnoeffel-tier', JSON.stringify({ tier: SOUND_TIER, t: Date.now() })); } catch (e) {} }
+    const SMALL_SPEAKERS = IS_TOUCH && Math.min(screen.width, screen.height) < 900;   // Handy/Tablet: Trommel für kleine Lautsprecher stimmen
     let LOW_POWER = IS_TOUCH && Math.min(screen.width, screen.height) < 900;   // Handy/Tablet: Klang sparsamer rechnen - und langsame Rechner (siehe Messung beim Start)
     // Erzwungenes Querformat (Handy mit Drehsperre): erst die Dreh-Schnittstelle des Browsers, sonst die Seite selbst drehen
     let forcedLandscape = false;
@@ -2112,13 +2113,19 @@
         const len = Math.floor(sr * dur);
         const buf = ctx.createBuffer(1, len, sr);
         const out = buf.getChannelData(0);
-        const baseFreq = isRim ? 136.0 : (isDeep ? 58.0 : 94.0);
+        // Kleine Lautsprecher (Handy, Tablet) geben unter ~200 Hz nichts wieder: Der Grundton der Trommel verschwindet, übrig bleibt
+        // der Schlägelklick - es klingt wie ein Holzlöffel auf einem Becher. Darum bekommt die Trommel dort den Bauch über die
+        // Obertöne des Grundtons (das Ohr ergänzt den Grundton), und der Klick wird gedämpft.
+        const small = SMALL_SPEAKERS;
+        const baseFreq = isRim ? 136.0 : (isDeep ? (small ? 72.0 : 58.0) : (small ? 104.0 : 94.0));
         const modeRatios = [1.0, 1.593, 2.135, 2.65];
         // der tiefe Schlag in die Fellmitte: der Grundton klingt lange nach, die Obertöne verschwinden schnell
         const modeDecays = isDeep ? [3.6, 9.0, 16.0, 24.0] : isHeavy ? [9.0, 14.5, 21.0, 29.0] : (isRim ? [16.0, 23.0, 33.0, 42.0] : [11.5, 17.5, 25.0, 34.0]);
         const modeGains  = isRim ? [0.32, 0.48, 0.25, 0.12] : (isDeep ? [0.9, 0.2, 0.08, 0.03] : [0.70, 0.28, 0.14, 0.07]);
         const phases = [0, 0, 0, 0];
-        const attackSharpness = isDeep ? 0.5 : isHeavy ? 1.20 : (velType === 'MED_SKIN' ? 0.78 : (velType === 'SOFT_RIM' ? 0.48 : 0.24));
+        const attackSharpness = (isDeep ? 0.5 : isHeavy ? 1.20 : (velType === 'MED_SKIN' ? 0.78 : (velType === 'SOFT_RIM' ? 0.48 : 0.24))) * (small ? 0.45 : 1);
+        const clickF1 = small ? 520 : (isRim ? 1120 : 810), clickF2 = small ? 1100 : (isRim ? 2250 : 1850);
+        const bodyGain = small && !isRim ? [0.85, 0.55, 0.3] : null;   // 2., 3., 4. Teilton des Grundtons: der "Bauch" für kleine Lautsprecher
         const pitchBendAmount = isDeep ? 0.7 : isHeavy ? 0.52 : (velType === 'MED_SKIN' ? 0.32 : 0.14);
         const overallGain     = isDeep ? 0.5 : isHeavy ? 0.88 : (velType === 'MED_SKIN' ? 0.62 : (velType === 'SOFT_RIM' ? 0.40 : 0.20));
         let woodClickLP = 0, snareLP = 0, shellRes = 0;
@@ -2126,8 +2133,8 @@
             const t = i / sr;
             const clickEnv = Math.exp(-t * (isHeavy ? 200 : 260));
             woodClickLP = 0.48 * woodClickLP + 0.52 * (Math.random() * 2 - 1);
-            const beaterAttack = (Math.sin(2 * Math.PI * (isRim ? 1120 : 810) * t) * 0.55 +
-                                  Math.sin(2 * Math.PI * (isRim ? 2250 : 1850) * t) * 0.30 +
+            const beaterAttack = (Math.sin(2 * Math.PI * clickF1 * t) * 0.55 +
+                                  Math.sin(2 * Math.PI * clickF2 * t) * 0.30 +
                                   woodClickLP * 0.65) * clickEnv * attackSharpness;
             const tensionDrop = 1.0 + pitchBendAmount * Math.exp(-t * 46);
             let skinSignal = 0;
@@ -2135,6 +2142,7 @@
                 phases[m] += (2 * Math.PI * baseFreq * modeRatios[m] * tensionDrop) / sr;
                 skinSignal += Math.sin(phases[m]) * Math.exp(-t * modeDecays[m]) * modeGains[m];
             }
+            if (bodyGain) for (let k = 2; k <= 4; k++) skinSignal += Math.sin(phases[0] * k) * Math.exp(-t * modeDecays[0] * (0.9 + 0.3 * k)) * bodyGain[k - 2] * modeGains[0];
             snareLP = 0.64 * snareLP + 0.36 * (Math.random() * 2 - 1);
             const snareAmt = isDeep ? 0.12 : isHeavy ? 0.32 : (velType === 'MED_SKIN' ? 0.20 : 0.08);
             const gutSnare = snareLP * (Math.abs(skinSignal) * 0.5 + Math.exp(-t * 35) * 0.16) * snareAmt;
