@@ -839,7 +839,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 18:12</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 18:58</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -1204,11 +1204,12 @@
             start_hint: 'Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.',
             version: 'Fassung', lobby_title: 'Am Tisch', lobby_code_hint: 'Tischcode – weitersagen, damit andere beitreten können:',
             copy_link_btn: 'Einladungslink kopieren', copy_code_btn: 'Code kopieren', start_battle_btn: 'Schlacht beginnen', dissolve_btn: 'Tisch auflösen',
-            lobby_host_hint: 'Du kannst jederzeit beginnen – leere Plätze spielen Knechte. Der erste Gast wird dein Waffenbruder (Nord).',
+            lobby_host_hint: 'Du kannst jederzeit beginnen – leere Plätze spielen Knechte. Der erste Gast setzt sich dir gegenüber (Nord) und ist dein Waffenbruder: ihr zwei gegen zwei Knechte. Willst du lieber gegen ihn spielen, setz ihn zur Seite (Ost oder West) – dann hat jeder von euch einen Knecht als Gefährten.',
+            seat_as_partner: 'Als Gefährte', seat_as_foe: 'Als Gegner',
             manual_invite_sum: 'Notweg: Einladung ohne Vermittler',
             manual_invite_hint: 'Erzeuge einen Einladungstext und schicke ihn dem Gast (WhatsApp, E-Mail). Er schickt dir einen Antworttext zurück, den du unten einträgst.',
             make_invite_btn: 'Einladungstext erzeugen', answer_label: 'Antworttext des Gastes', answer_ph: 'Antworttext hier einfügen', accept_answer_btn: 'Antwort annehmen',
-            lobby_guest_hint: 'Warte, bis der Geber die Schlacht beginnt. Mit „Hierher setzen“ kannst du noch den Platz wechseln.', seat_here_btn: 'Hierher setzen',
+            lobby_guest_hint: 'Warte, bis der Geber die Schlacht beginnt. Mit „Hierher setzen“ wechselst du den Platz: gegenüber (Nord) spielst du mit dem Geber zusammen, zur Seite (Ost/West) gegen ihn – die leeren Plätze spielen Knechte.', seat_here_btn: 'Hierher setzen',
             leave_btn: 'Tisch verlassen', inst_lute: 'Laute', inst_hg: 'Drehleier', inst_drum: 'Trommel',
             lute_title: 'Renaissance-Laute ein-/ausschalten', hg_title: 'Drehleier ein-/ausschalten', drum_title: 'Landsknecht-Trommel ein-/ausschalten',
             lute_vol: 'Lautstärke der Laute', hg_vol: 'Lautstärke der Drehleier', drum_vol: 'Lautstärke der Trommel',
@@ -1261,11 +1262,12 @@
             start_hint: 'Four seats, two sides: South &amp; North against West &amp; East. Empty seats are taken by hirelings (computer players). The rules are always available under “The Rules”.',
             version: 'Version', lobby_title: 'At the table', lobby_code_hint: 'Table code – pass it on so others can join:',
             copy_link_btn: 'Copy invitation link', copy_code_btn: 'Copy code', start_battle_btn: 'Start the battle', dissolve_btn: 'Close the table',
-            lobby_host_hint: 'You can start at any time – empty seats are played by hirelings. The first guest becomes your comrade (North).',
+            lobby_host_hint: 'You can start at any time – empty seats are played by hirelings. The first guest sits across from you (North) as your comrade: the two of you against two hirelings. If you would rather play against each other, seat them to the side (East or West) – then each of you has a hireling as partner.',
+            seat_as_partner: 'As comrade', seat_as_foe: 'As opponent',
             manual_invite_sum: 'Fallback: invitation without the broker',
             manual_invite_hint: 'Create an invitation text and send it to the guest (WhatsApp, e-mail). The guest sends back a reply text that you paste below.',
             make_invite_btn: 'Create invitation text', answer_label: 'Guest\'s reply text', answer_ph: 'Paste the reply text here', accept_answer_btn: 'Accept reply',
-            lobby_guest_hint: 'Wait for the dealer to start the battle. Use “Sit here” to change seats.', seat_here_btn: 'Sit here',
+            lobby_guest_hint: 'Wait for the dealer to start the battle. Use “Sit here” to change seats: across (North) you play with the dealer, to the side (East/West) against him – empty seats are played by hirelings.', seat_here_btn: 'Sit here',
             leave_btn: 'Leave the table', inst_lute: 'Lute', inst_hg: 'Hurdy‑gurdy', inst_drum: 'Drum',
             lute_title: 'Renaissance lute on/off', hg_title: 'Hurdy-gurdy on/off', drum_title: 'Landsknecht drum on/off',
             lute_vol: 'Lute volume', hg_vol: 'Hurdy-gurdy volume', drum_vol: 'Drum volume',
@@ -4778,6 +4780,13 @@
             await hostNet.manualConn.pc.setRemoteDescription(data.sdp);
         };
 
+        // Der Geber setzt einen Gast um: gegenüber (Gefährte) oder zur Seite (Gegner, jeder mit einem Knecht)
+        hostNet.moveGuest = (from, to) => {
+            if (hostNet.started || ![1, 2, 3].includes(from) || ![1, 2, 3].includes(to) || from === to) return;
+            if (seats[from].kind !== 'remote' || seats[to].kind !== 'bot') return;
+            const g = seats[from]; g.conn.seat = to;
+            seats[from] = { name: BOT_NAMES[from], kind: 'bot' }; seats[to] = g; broadcastLobby();
+        };
         hostNet.start = () => {
             hostNet.started = true;
             game = new Game(seats, (seat, view) => { if (seat === 0) renderView(view); else if (seats[seat].conn) sendTo(seats[seat].conn, { t: 'view', view }); });
@@ -4912,6 +4921,13 @@
             const rel = i === you ? T('role_you') : (i === (you + 2) % 4 ? T('role_partner') : T('role_foe'));
             d.innerHTML = `<div class="seat-pos">${T('seats')[i]}</div><div class="seat-name">${s.kind === 'bot' ? s.name + ' (' + T('bot') + ')' : s.name}</div><div class="seat-rel">${rel}</div>`;
             if (role === 'guest' && s.kind === 'bot' && i !== 0) { const b = document.createElement('button'); b.className = 'small-btn'; b.textContent = T('seat_here_btn'); b.onclick = () => requestSeat(i); d.appendChild(b); }
+            if (role === 'host' && s.kind === 'remote' && hostNet && !hostNet.started) {
+                // Gast umsetzen: Knöpfe für jeden freien Platz - "Gefährte" (gegenüber) oder "Gegner" (zur Seite)
+                [1, 2, 3].filter(j => j !== i && lobby.seats[j].kind === 'bot').forEach(j => {
+                    const b = document.createElement('button'); b.className = 'small-btn'; b.style.marginRight = '6px';
+                    b.textContent = T(j === 2 ? 'seat_as_partner' : 'seat_as_foe') + ' (' + T('seats')[j] + ')'; b.onclick = () => hostNet.moveGuest(i, j); d.appendChild(b);
+                });
+            }
             box.appendChild(d);
         });
         document.getElementById('lobby-host-controls').style.display = role === 'host' ? 'block' : 'none';
