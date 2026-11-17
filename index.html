@@ -619,8 +619,9 @@
             font-size: 44px; color: var(--gold); text-align: center; letter-spacing: 4px;
             text-shadow: 0 0 20px rgba(184,134,11,0.5), 2px 2px 4px black; margin: 6px 0 4px 0; user-select: text;
         }
-        #lobby-seats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-        .lobby-seat { border: 1px solid rgba(184,134,11,0.4); padding: 10px 12px; background: rgba(0,0,0,0.35); }
+        #lobby-seats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 14px; width: 100%; }   /* beide Spalten gleich breit, bis zum Rand - lange Knöpfe dürfen die Spalte nicht verbreitern */
+        .lobby-seat { border: 1px solid rgba(184,134,11,0.4); padding: 10px 12px; background: rgba(0,0,0,0.35); min-width: 0; box-sizing: border-box; }
+        .lobby-seat .small-btn { white-space: normal; margin-top: 6px; }
         .lobby-seat.me { border-color: var(--gold); box-shadow: inset 0 0 12px rgba(184,134,11,0.3); }
         .lobby-seat.bot { opacity: 0.75; }
         .seat-pos { font-size: 16px; color: rgba(216,199,169,0.6); letter-spacing: 2px; }
@@ -839,7 +840,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 18:58</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 19:19</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
