@@ -839,7 +839,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 10:21</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 13:47</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -3039,7 +3039,8 @@
         const counts = [0, 1, 2, 3].map(j => j === seat ? hand.length : hand.length - (trick.some(p => p.seat === j) ? 1 : 0));
         // Kandidaten: gleichwertige Karten (gleiche Rolle, gleicher Wert) nur einmal rechnen
         const cands = [];
-        for (const c of playable) if (!cands.some(d => d.suit === c.suit && botKeepValue(d, trump) === botKeepValue(c, trump) && getCardRole(d, trick.length === 0, trump).type === getCardRole(c, trick.length === 0, trump).type && (c.suit === trump || NORMAL_RANK_ORDER[c.rank] === NORMAL_RANK_ORDER[d.rank]))) cands.push(c);
+        const devilDump = c => c.suit === trump && c.rank === '7' && trick.length > 0;   // den Teufel wirft niemand nach, solange er etwas anderes hat
+        for (const c of (playable.some(c => !devilDump(c)) ? playable.filter(c => !devilDump(c)) : playable)) if (!cands.some(d => d.suit === c.suit && botKeepValue(d, trump) === botKeepValue(c, trump) && getCardRole(d, trick.length === 0, trump).type === getCardRole(c, trick.length === 0, trump).type && (c.suit === trump || NORMAL_RANK_ORDER[c.rank] === NORMAL_RANK_ORDER[d.rank]))) cands.push(c);
         const N = ctx.samples || (LOW_POWER ? 60 : 120);
         const score = (ctx.acc && ctx.acc.score) || cands.map(() => 0);   // Zwischenstand über mehrere Häppchen hinweg
         if (ctx.acc) { ctx.acc.score = score; ctx.acc.cands = cands; }
@@ -4434,7 +4435,7 @@
         const fallen = (v.played || []).filter(c => c.suit === v.trump && 'U762'.includes(c.rank));
         const fullLeft = ['U', '6', '2'].filter(r => !fallen.some(c => c.rank === r) && !v.hand.some(c => c.suit === v.trump && c.rank === r));
         if (!fallen.length) return C('count_none');
-        const names = fallen.map(c => coachCard(c, v.trump, true).replace(/^[^(]*\(/, '').replace(/\)$/, ''));
+        const names = fallen.map(c => coachCard(c, v.trump, true));   // mit Farbe und Titel: "Rosen-2 (der Kaiser)" - damit klar ist, welche Karte gemeint ist
         let out = C('count_some', { list: names.join(', ') });
         if (!fullLeft.length) out = C('count_all');
         return out;
