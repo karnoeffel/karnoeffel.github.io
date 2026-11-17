@@ -839,7 +839,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 16:15</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 18:12</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -2148,7 +2148,8 @@
             const gutSnare = snareLP * (Math.abs(skinSignal) * 0.5 + Math.exp(-t * 35) * 0.16) * snareAmt;
             shellRes += 0.18 * (skinSignal - shellRes);
             const tail = i > len - 400 ? (len - i) / 400 : 1;
-            out[i] = Math.tanh((beaterAttack + skinSignal * 0.85 + shellRes * 0.35 + gutSnare) * 1.32) * overallGain * tail;
+            const onset = i < 48 ? i / 48 : 1;   // zwei Millisekunden Einschwingen: nimmt dem Schlag die digitale Kante, nicht den Anschlag
+            out[i] = Math.tanh((beaterAttack + skinSignal * 0.85 + shellRes * 0.35 + gutSnare) * 1.32) * overallGain * tail * onset;
         }
         return buf;
     }
@@ -2332,7 +2333,7 @@
         const g = audioCtx.createGain();
         src.buffer = buf;
         src.detune.value = (Math.random() * 32 - 16);
-        g.gain.setValueAtTime(0.62 * velocityMultiplier * (0.84 + Math.random() * 0.32), Math.max(audioCtx.currentTime, when));
+        g.gain.value = 0.62 * velocityMultiplier * (0.84 + Math.random() * 0.32);   // fest vor dem Start - ein später gesetzter Pegel wäre ein Sprung, also ein Knacks
         src.connect(g); g.connect(drumBus);
         if (window.__drumLog) window.__drumLog.push([velType, Math.max(audioCtx.currentTime, tStart), audioCtx.currentTime]);
         src.start(Math.max(audioCtx.currentTime, tStart));
@@ -2457,7 +2458,8 @@
         const reg = intensity > 0.65 && n > 8 ? 1 : 0;
         const transforms = [['plain', 'sequence'], ['sequence', 'invert', 'retro', 'augment'], ['fragment', 'sequence', 'diminish', 'sequenceDown']];
         const bars = [];
-        let idx = startIdx !== null ? startIdx : clampI(tonic + reg + pick([0, 0, 2, 4]), n);
+        const opening = band.phraseNo === 0;   // erste Phrase eines Stücks: nicht immer vom Grundton, auch von der Quinte, der Terz, von unten oder von oben
+        let idx = startIdx !== null ? startIdx : clampI(tonic + reg + (opening ? pick([0, 2, 4, 4, -3, 7, 5]) : pick([0, 0, 2, 4])), n);
         for (let b = 0; b < 3; b++) {
             const tr = pick(transforms[b]);
             const bar = renderMotif(m, idx, n, meter, tr, intensity, tonic + reg + 2);
@@ -2819,7 +2821,7 @@
             }
             const level = (luteMode === 'solo' ? 0.5 : (luteMode === 'unison' ? 0.42 : 0.34));
             // Nach einer Antwort-Kadenz lässt er den Schlusston gern ausklingen und setzt erst später wieder ein
-            const restUntil = band.luteRest ? meter / 2 : 0;
+            const restUntil = (band.luteRest || (band.phraseNo === 0 && bIdx === 0 && luteMode === 'solo' && chance(0.4))) ? meter / 2 : 0;   // Auftakt: erst nach dem halben Takt
             band.luteRest = false;
             // Freiraum: Der Lautenist denkt in Melodien, nicht in Schlägen. Nach einem gehaltenen Ton lässt er
             // gern Luft - kurz oder lang, über den Takt hinaus; spielt ein anderer, hört er auch mal eine Weile zu.
@@ -2857,7 +2859,16 @@
 
         if (finalBar) {
             // Schlusston: Laute setzt Grundton mit Oktave, Drehleier hält und verklingt
-            if (instEnabled.lute) { const tonic = SCALE[mood.tonicIdx]; const low = tonic.replace(/\d/, d => String(+d - 1)); scheduleLute(FREQS[low] ? low : tonic, barStartTime + barLen - E * 2, 0.5, true); scheduleLute(tonic, barStartTime + barLen - E * 2 + 0.03 + Math.random() * 0.04, 0.4); }
+            if (instEnabled.lute) {
+                // Der Schluss - jedes Mal anders: Oktave, Quinte, ein einzelner Ton, ein gebrochener Klang, oder die Laute schweigt und lässt die Drehleier ausklingen
+                const tonic = SCALE[mood.tonicIdx], fifth = SCALE[mood.fifthIdx]; const low = tonic.replace(/\d/, d => String(+d - 1)); const lowT = FREQS[low] ? low : tonic;
+                const t0 = barStartTime + barLen - E * 2, fin = pick(['octave', 'fifth', 'single', 'broken', 'broken', 'silent', 'high']);
+                if (fin === 'octave') { scheduleLute(lowT, t0, 0.5, true); scheduleLute(tonic, t0 + 0.03 + Math.random() * 0.04, 0.4); }
+                else if (fin === 'fifth') { scheduleLute(lowT, t0, 0.48, true); scheduleLute(fifth, t0 + 0.04, 0.36); }
+                else if (fin === 'single') scheduleLute(chance(0.5) ? lowT : tonic, t0 + 0.05, 0.46, true);
+                else if (fin === 'broken') { [lowT, fifth, tonic].forEach((nn, k) => scheduleLute(nn, t0 + k * (0.09 + Math.random() * 0.05), 0.42 - k * 0.05, k === 0)); }
+                else if (fin === 'high') { scheduleLute(tonic, t0 - E * 0.5, 0.3); scheduleLute(lowT, t0 + 0.1, 0.46, true); }
+            }
             if (hgWheel) hgWheel.chanBus.gain.setTargetAtTime(0.03, barStartTime + barLen + 0.8, 0.5);
             piece.phase = 'pause';
             band.barInPhrase = 0;
