@@ -839,7 +839,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 13:47</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 16:02</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -1345,6 +1345,13 @@
     // Kleine Schirme (Handy, Tablet): die gesamte Oberfläche wird verkleinert, nicht nur der Tisch - sonst
     // liegen Tafeln und Knöpfe über den Karten. Darüber hinaus der Tisch wie bisher.
     const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    /* Klangstufen: 0 voll · 1 sparsam (kürzerer Hall) · 2 leicht (halbe Abtastrate, einfacher Raum, eine Stimme je Saite)
+       · 3 Notfall (kein Hall, trockene Saiten). Die Stufe wird beim Start geschätzt, gemerkt, und während des Spiels von einem
+       Wächter nachgeregelt, der merkt, wenn der Klangprozess nicht nachkommt - der Spieler merkt nur, dass es nicht stockt. */
+    let SOUND_TIER = 0;
+    try { const st = JSON.parse(localStorage.getItem('karnoeffel-tier') || 'null'); if (st && typeof st.tier === 'number') SOUND_TIER = (Date.now() - st.t > 3 * 86400000) ? Math.max(0, st.tier - 1) : st.tier; } catch (e) {}
+    try { const q = new URLSearchParams(location.search).get('klang'); if (q !== null) SOUND_TIER = Math.max(0, Math.min(3, parseInt(q, 10) || 0)); } catch (e) {}
+    function saveTier() { try { localStorage.setItem('karnoeffel-tier', JSON.stringify({ tier: SOUND_TIER, t: Date.now() })); } catch (e) {} }
     let LOW_POWER = IS_TOUCH && Math.min(screen.width, screen.height) < 900;   // Handy/Tablet: Klang sparsamer rechnen - und langsame Rechner (siehe Messung beim Start)
     // Erzwungenes Querformat (Handy mit Drehsperre): erst die Dreh-Schnittstelle des Browsers, sonst die Seite selbst drehen
     let forcedLandscape = false;
@@ -1415,7 +1422,7 @@
        ========================================================================= */
     let audioCtx = null;
     let masterGain = null;
-    let cellarReverb = null;
+    let cellarReverb = null, reverbReturn = null, reverbTail = null;
     let sfxBus = null;
 
     let userVolGains = { lute: null, hg: null, drum: null };
@@ -1677,7 +1684,7 @@
     /* ---------- 2B. Kellergewölbe-Hall ---------- */
     function createDeepCellarVaultReverb(ctx) {
         const sr = ctx.sampleRate;
-        const duration = LOW_POWER ? 1.1 : 2.2;      // Handy: kürzerer Hall, halbe Faltungsarbeit
+        const duration = (LOW_POWER || SOUND_TIER >= 1) ? 1.1 : 2.2;      // sparsam: kürzerer Hall, halbe Faltungsarbeit
         const len = Math.floor(sr * duration);
         const impulse = ctx.createBuffer(2, len, sr);
         const preDelaySamples = Math.floor(sr * 0.020);
@@ -1851,12 +1858,12 @@
     }
 
     // Gestrichene Saite: zwei leicht gegeneinander verstimmte Sägezähne (ein Chor), Tiefpass zur Darmsaite
-    function makeBowedString(ctx, freq, lpFreq, lpQ, level, dest, spread = 4) {
+    function makeBowedString(ctx, freq, lpFreq, lpQ, level, dest, spread = 4, voices = 2) {
         const lp = ctx.createBiquadFilter();
         lp.type = 'lowpass'; lp.frequency.value = lpFreq; lp.Q.value = lpQ;
-        const g = ctx.createGain(); g.gain.value = level;
+        const g = ctx.createGain(); g.gain.value = level * (voices === 1 ? 1.7 : 1);   // eine Stimme ist leiser als zwei verstimmte
         lp.connect(g); g.connect(dest);
-        const oscs = [-spread, spread].map(dt => {
+        const oscs = (voices === 1 ? [0] : [-spread, spread]).map(dt => {
             const o = ctx.createOscillator();
             o.type = 'sawtooth'; o.frequency.value = freq; o.detune.value = dt;
             o.connect(lp); o.start();
@@ -1876,8 +1883,8 @@
         const body = ctx.createConvolver();
         body.normalize = false;
         body.buffer = createHurdyGurdyWoodBodyIR(ctx);
-        const bodyMix = ctx.createGain(); bodyMix.gain.value = 0.6;
-        const dryMix = ctx.createGain(); dryMix.gain.value = 0.4;
+        const bodyMix = ctx.createGain(); bodyMix.gain.value = SOUND_TIER >= 3 ? 0 : 0.6;
+        const dryMix = ctx.createGain(); dryMix.gain.value = SOUND_TIER >= 3 ? 1 : 0.4;
         const strings = ctx.createGain(); strings.gain.value = 0.9;     // vom Kurbelmodell gesteuert
         strings.connect(body); body.connect(bodyMix); bodyMix.connect(master);
         strings.connect(dryMix); dryMix.connect(master);
@@ -1898,15 +1905,16 @@
         const chanEQ2 = ctx.createBiquadFilter();
         chanEQ2.type = 'peaking'; chanEQ2.frequency.value = 2300; chanEQ2.Q.value = 1.6; chanEQ2.gain.value = 2.0;
         chanBus.connect(chanEQ); chanEQ.connect(chanEQ2); chanEQ2.connect(strings);
-        const chan = makeBowedString(ctx, FREQS[mood.openChan], 1900, 0.8, 0.5, chanBus, 2);
+        const chan = makeBowedString(ctx, FREQS[mood.openChan], 1900, 0.8, 0.5, chanBus, 2, SOUND_TIER >= 2 ? 1 : 2);
 
         // Bordune: Gros bourdon (Grundton) und Mouche (Quinte)
         const droneBus = ctx.createGain(); droneBus.gain.value = 0.2;
         droneBus.connect(strings);
-        const drone1 = makeBowedString(ctx, FREQS[mood.droneLow], 800, 0.7, 0.9, droneBus, 1.5);
-        const drone2 = makeBowedString(ctx, FREQS[mood.droneFifth], 1000, 0.7, 0.5, droneBus, 1.5);
+        const voices = SOUND_TIER >= 2 ? 1 : 2;
+        const drone1 = makeBowedString(ctx, FREQS[mood.droneLow], 800, 0.7, 0.9, droneBus, 1.5, voices);
+        const drone2 = makeBowedString(ctx, FREQS[mood.droneFifth], 1000, 0.7, 0.5, droneBus, 1.5, voices);
         // Gros bourdon: der dicke Bass eine Oktave unter dem Grundton, dunkel und leise
-        const drone0 = makeBowedString(ctx, FREQS[mood.droneLow] / 2, 420, 0.6, 0.55, droneBus, 1.0);
+        const drone0 = makeBowedString(ctx, FREQS[mood.droneLow] / 2, 420, 0.6, 0.55, droneBus, 1.0, voices);
 
         // Streichrauschen, das der Melodie folgt: Rauschen durch ein schmales Band auf dem 2. Teilton der Melodiesaite
         const bowNoise = ctx.createBufferSource();
@@ -1924,11 +1932,13 @@
         for (let i = 0; i < crackleLen; i++) {
             if (Math.random() < 0.00018) { const a = Math.random() * 0.8 + 0.2; for (let k = 0; k < 24 && i + k < crackleLen; k++) cd[i + k] += (Math.random() * 2 - 1) * a * (1 - k / 24); }
         }
-        const crackle = ctx.createBufferSource(); crackle.buffer = crackleBuf; crackle.loop = true;
-        const crackleHP = ctx.createBiquadFilter(); crackleHP.type = 'highpass'; crackleHP.frequency.value = 2800;
         const crackleGain = ctx.createGain(); crackleGain.gain.value = 0.06;
-        crackle.connect(crackleHP); crackleHP.connect(crackleGain); crackleGain.connect(strings);
-        crackle.start(now);
+        if (SOUND_TIER < 2) {   // leichte Stufen: kein Knistern (eine Quelle und ein Filter weniger)
+            const crackle = ctx.createBufferSource(); crackle.buffer = crackleBuf; crackle.loop = true;
+            const crackleHP = ctx.createBiquadFilter(); crackleHP.type = 'highpass'; crackleHP.frequency.value = 2800;
+            crackle.connect(crackleHP); crackleHP.connect(crackleGain); crackleGain.connect(strings);
+            crackle.start(now);
+        }
 
         // Schnarrsaite (Trompette) mit Chien: eine Oktave über der Mouche. Der Steg prellt beim Ruck
         // und zerhackt den Ton in ein Schnarren - hier durch Amplitudenmodulation mit Sättigung.
@@ -1957,7 +1967,7 @@
         return {
             isRunning: false,
             master, strings, chanBus, wheelGain,
-            chan, drone0, drone1, drone2, tromp, buzzLFO, chienEnv, bowBP, crackleGain, trompBP,
+            chan, drone0, drone1, drone2, tromp, buzzLFO, chienEnv, bowBP, crackleGain, trompBP, bodyMix, dryMix,
             bodyInput: strings,
             crank: { speed: 1.0, target: 1.0, phase: 0, lastT: ctx.currentTime, timer: null }
         };
@@ -2138,7 +2148,11 @@
     function initMedievalAudio() {
         if (audioCtx) return;
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioCtx({ latencyHint: 'playback' });   // großer Ausgabepuffer: keine Aussetzer, der Klang bleibt voll
+        if (LOW_POWER && SOUND_TIER < 1) SOUND_TIER = 1;
+        if (IS_TOUCH && Math.min(screen.width, screen.height) < 900 && SOUND_TIER < 2 && !new URLSearchParams(location.search).has('klang')) SOUND_TIER = 2;   // Handy und Tablet: von vornherein leicht
+        audioCtx = null;
+        if (SOUND_TIER >= 2) { try { audioCtx = new AudioCtx({ latencyHint: 'playback', sampleRate: 24000 }); } catch (e) { audioCtx = null; } }   // halbe Abtastrate = halbe Arbeit für jeden Knoten
+        if (!audioCtx) audioCtx = new AudioCtx({ latencyHint: 'playback' });   // großer Ausgabepuffer: keine Aussetzer, der Klang bleibt voll
 
         // Messung: Wie lange braucht dieser Rechner für die Lautensaiten? Ein flotter Rechner unter 400 ms, ein alter
         // deutlich länger - dann bekommt er den sparsamen Klang (kürzerer Hall, weniger Stimmen, weitere Vorausplanung).
@@ -2146,7 +2160,9 @@
         Object.keys(FREQS).forEach(note => { luteBuffers[note] = createLuteBuffer(audioCtx, FREQS[note], 4.2); });
         const buildMs = performance.now() - tBuild;
         if (buildMs > 900 || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2)) LOW_POWER = true;
-        console.info('Karnöffel: Saitenbau ' + Math.round(buildMs) + ' ms' + (LOW_POWER ? ' - sparsamer Klang' : ''));
+        if (buildMs > 900 && SOUND_TIER < 1) SOUND_TIER = 1;
+        if (buildMs > 1800 && SOUND_TIER < 2) SOUND_TIER = 2;
+        console.info('Karnöffel: Saitenbau ' + Math.round(buildMs) + ' ms, Klangstufe ' + SOUND_TIER + ', ' + audioCtx.sampleRate + ' Hz');
         ['GHOST', 'SOFT_RIM', 'MED_SKIN', 'HEAVY_ACCENT', 'DEEP'].forEach(vType => { drumVelBuffers[vType] = createVelocityTaborBuffer(audioCtx, vType); });
 
         const comp = audioCtx.createDynamicsCompressor();
@@ -2158,11 +2174,11 @@
         masterGain.gain.exponentialRampToValueAtTime(0.85, audioCtx.currentTime + 0.25);   // kein Knacks beim Einschalten
         masterGain.connect(comp);
 
-        cellarReverb = createDeepCellarVaultReverb(audioCtx);
-        const reverbReturn = audioCtx.createGain();
+        cellarReverb = audioCtx.createGain();                   // Eingang des Halls; was dahinter hängt, bestimmt die Klangstufe
+        reverbReturn = audioCtx.createGain();
         reverbReturn.gain.value = 0.38;
-        cellarReverb.connect(reverbReturn);
         reverbReturn.connect(comp);
+        buildReverbForTier();
 
         sfxBus = audioCtx.createGain();
         sfxBus.gain.value = 1.0;
@@ -2196,6 +2212,56 @@
 
         hgWheel = initContinuousHurdyGurdy(audioCtx, hgBus);
 
+    }
+
+    // Der Hall je Klangstufe: Faltung (voll/sparsam), ein einfacher Raum aus zwei Rückkopplungsverzögerungen (leicht), nichts (Notfall)
+    function buildReverbForTier() {
+        if (!audioCtx || !cellarReverb) return;
+        if (reverbTail) { try { reverbTail.forEach(n => n.disconnect()); } catch (e) {} }
+        try { cellarReverb.disconnect(); } catch (e) {}
+        reverbTail = [];
+        if (SOUND_TIER <= 1) {
+            const conv = createDeepCellarVaultReverb(audioCtx);
+            cellarReverb.connect(conv); conv.connect(reverbReturn); reverbTail.push(conv);
+        } else if (SOUND_TIER === 2) {
+            const lp = audioCtx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600;
+            cellarReverb.connect(lp); reverbTail.push(lp);
+            [[0.043, 0.62], [0.071, 0.58], [0.097, 0.52]].forEach(([t, fb]) => {
+                const d = audioCtx.createDelay(0.2); d.delayTime.value = t;
+                const g = audioCtx.createGain(); g.gain.value = fb;
+                const damp = audioCtx.createBiquadFilter(); damp.type = 'lowpass'; damp.frequency.value = 1800;
+                lp.connect(d); d.connect(damp); damp.connect(g); g.connect(d); d.connect(reverbReturn);
+                reverbTail.push(d, g, damp);
+            });
+            reverbReturn.gain.value = 0.22;
+        } else {
+            reverbReturn.gain.value = 0;   // Notfall: trocken
+        }
+    }
+    // Der Wächter: Fällt die Klanguhr hinter die Wanduhr zurück, kommt der Klangprozess nicht nach - dann eine Stufe leichter.
+    const tierWatch = { wall: 0, aud: 0, stalls: [], last: 0 };
+    function tierWatchTick() {
+        if (!audioCtx || !isMusicPlaying || audioCtx.state !== 'running' || document.visibilityState !== 'visible') { tierWatch.wall = 0; return; }
+        const wall = performance.now() / 1000, aud = audioCtx.currentTime;
+        if (tierWatch.wall) {
+            const lag = (wall - tierWatch.wall) - (aud - tierWatch.aud);   // > 0: die Klanguhr blieb zurück (Aussetzer)
+            tierWatch.stalls.push(lag > 0.06 ? 1 : 0); if (tierWatch.stalls.length > 6) tierWatch.stalls.shift();
+            const n = tierWatch.stalls.reduce((a, b) => a + b, 0);
+            if (n >= 2 && SOUND_TIER < 3 && wall - tierWatch.last > 20) { tierWatch.last = wall; tierWatch.stalls = []; setSoundTier(SOUND_TIER + 1); }
+        }
+        tierWatch.wall = wall; tierWatch.aud = aud;
+    }
+    setInterval(tierWatchTick, 3000);
+    function setSoundTier(t) {
+        SOUND_TIER = Math.max(0, Math.min(3, t)); saveTier();
+        console.info('Karnöffel: Klangstufe ' + SOUND_TIER + (SOUND_TIER >= 2 ? ' (Abtastrate greift beim nächsten Laden)' : ''));
+        if (!audioCtx) return;
+        buildReverbForTier();
+        if (hgWheel) {
+            // leichter: zweite Stimme jeder Saite und das Knistern stilllegen
+            if (SOUND_TIER >= 2) { [hgWheel.chan, hgWheel.drone0, hgWheel.drone1, hgWheel.drone2].forEach(st => { while (st.oscs.length > 1) { const o = st.oscs.pop(); try { o.stop(); o.disconnect(); } catch (e) {} } }); hgWheel.crackleGain.gain.value = 0; }
+            if (SOUND_TIER >= 3) { try { hgWheel.bodyMix.gain.value = 0; hgWheel.dryMix.gain.value = 1; } catch (e) {} }
+        }
     }
 
     function setInstrumentVolume(instKey, sliderVal) {
@@ -2797,7 +2863,7 @@
         if (!isMusicPlaying || !audioCtx) return;
         // Weit zurückgefallen (Rechner war blockiert)? Dann nicht die versäumten Takte nachholen, sondern neu ansetzen
         if (nextNoteTime < audioCtx.currentTime - 0.4) nextNoteTime = audioCtx.currentTime + 0.15;
-        while (nextNoteTime < audioCtx.currentTime + (LOW_POWER ? 2.6 : 1.8) + extra) {   // weit voraus: Ruckler der Oberfläche erreichen den Klang nicht
+        while (nextNoteTime < audioCtx.currentTime + [1.8, 2.6, 3.2, 4.0][SOUND_TIER] + extra) {   // weit voraus: Ruckler der Oberfläche erreichen den Klang nicht
             nextNoteTime += composeAndScheduleNextBar(nextNoteTime);
         }
     }
