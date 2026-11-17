@@ -536,6 +536,13 @@
         #lesson-text::-webkit-scrollbar-thumb, #lesson-reason::-webkit-scrollbar-thumb { background: rgba(184,134,11,0.55); }
         #lesson-box.coach #lesson-text { font-size: 18px; line-height: 1.38; }
         #lesson-box.coach #lesson-step { margin-bottom: 2px; }
+        .rbad { color: #e0a060; } .rok { color: #c9b690; }
+        #lesson-text .cn, #lesson-reason .cn, #end-reason .cn { color: var(--gold); }
+        #lesson-head { display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto; }
+        #lesson-head #lesson-step { margin-bottom: 0; }
+        #lesson-prev { background: none; border: 1px solid rgba(184,134,11,0.45); color: var(--gold); padding: 2px 5px; cursor: pointer; opacity: 0.8; line-height: 0; margin: 0 0 4px 0; }
+        #lesson-prev:hover, #lesson-prev.open { opacity: 1; border-color: var(--gold); box-shadow: 0 0 8px rgba(184,134,11,0.35); }
+        #lesson-prev svg { display: block; }
         /* Unterste Zone im Begleitmodus: warum die letzte Runde so ausging - bleibt stehen, bis die nächste endet */
         #lesson-reason { display: none; box-sizing: border-box; flex: 0 0 26%; margin-top: 8px; padding: 8px 10px 6px 0; border-top: 1px solid rgba(184,134,11,0.4); font-size: 17px; line-height: 1.36; overflow-y: auto; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: rgba(184,134,11,0.6) transparent; }
         #lesson-reason .rtitle { color: var(--gold); letter-spacing: 1px; font-size: 14px; display: block; margin-bottom: 3px; }
@@ -777,7 +784,7 @@
 
     <!-- ===== Lehrstunde ===== -->
     <div id="lesson-box">
-        <div id="lesson-step"></div>
+        <div id="lesson-head"><div id="lesson-step"></div><button id="lesson-prev" onclick="coachHistBack()" title="Vorige Worte" style="display:none"><svg viewBox="0 0 34 24" width="27" height="19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12l5-4M2 12l5 4M2 12h8"/><path d="M14 12c3-4.5 6-6.5 9.5-6.5S30 7.5 33 12c-3 4.5-6 6.5-9.5 6.5S17 16.5 14 12z"/><circle cx="23.5" cy="12" r="2.6"/></svg></button></div>
         <div id="lesson-text"></div>
         <div id="lesson-reason"></div>
         <div id="lesson-btns">
@@ -832,7 +839,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-16 15:40</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-17 10:21</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
@@ -1185,7 +1192,7 @@
             rank_dead: 'König, Ober, Banner, 9 und 8 der Trumpffarbe sind keine Trümpfe – gewöhnliche Karten.',
             rank_king: 'Der König ist die höchste gewöhnliche Karte – nur Karnöffel, angespielter Teufel, Papst und Kaiser nehmen ihn; kein halber Trumpf.',
             rotate_force: 'Trotzdem quer anzeigen', hint_card: '{card}: {what}',
-            tut_btn: 'Beim alten Söldner lernen', tut_basic: 'Die Lehrstunde', tut_basic_sub: 'Regeln, Schritt für Schritt am Tisch', tut_coach: 'Ein Spiel an Konz\' Seite', tut_coach_sub: 'Echte Gegner – er sagt dir zu jeder Karte, was sie taugt', tut_next: 'Weiter', tut_skip: 'Genug gelernt', tut_done: 'Spiel an Konz\' Seite', tut_to_school: 'Zur Hohen Schule', coach_quit: 'Zum Startbild', tut_step: 'Lektion {n} von {m}', tut_step2: 'Hohe Schule {n} / {m}', tut_pick: 'Wähle eine Karte.', tut_quiz: 'Tipp auf die Karte, die den Stich holt.', tut_school: 'Die Hohe Schule', tut_school_sub: 'Zwanzig Stiche – wer holt ihn, und warum?', tut_mentor: 'Konz (dein Gefährte)', tut_fellow: 'Gesell',
+            tut_btn: 'Beim alten Söldner lernen', tut_basic: 'Die Lehrstunde', tut_basic_sub: 'Regeln, Schritt für Schritt am Tisch', tut_coach: 'Ein Spiel an Konz\' Seite', tut_coach_sub: 'Echte Gegner – er sagt dir zu jeder Karte, was sie taugt', tut_next: 'Weiter', tut_skip: 'Genug gelernt', tut_done: 'Spiel an Konz\' Seite', tut_to_school: 'Zur Hohen Schule', coach_quit: 'Zum Startbild', tut_step: 'Lektion {n} von {m}', tut_step2: 'Hohe Schule {n} / {m}', tut_pick: 'Wähle eine Karte.', tut_quiz: 'Tipp auf die Karte, die den Stich holt.', coach_back: '{n} zurück', tut_school: 'Die Hohe Schule', tut_school_sub: 'Zwanzig Stiche – wer holt ihn, und warum?', tut_mentor: 'Konz (dein Gefährte)', tut_fellow: 'Gesell',
             gate_line: 'Eine ungemütliche Nacht im Jahre 1426.', gate_btn: 'Tritt ein', gate_sub: 'mit Ton',
             prolog_date: 'Anno Domini 1426 · Pfingstmesse zu Nördlingen', prolog_sit: 'Setz dich zu ihm', prolog_skip: 'Ich kenne das Spiel',
             prolog_text: 'Draußen peitscht der Regen über den Markt. Drinnen riecht es nach nassem Loden, Talg und saurem Wein.\n\nAm hintersten Tisch sitzt ein alter Söldner, eine Narbe quer über dem Gesicht, und mischt ein abgegriffenes Blatt.\n\n„Karnöffel", knurrt er, ohne aufzusehen. „Das Spiel, bei dem der Knecht den Papst sticht.\nDie Prediger schimpfen drauf – hier auf der Messe ist\'s erlaubt.\n\nSetz dich. Ich zeig dir, wie du heut Nacht dein Geld behältst."',
@@ -1242,7 +1249,7 @@
             rank_dead: 'King, Ober, Banner, 9 and 8 of the trump suit are no trumps – ordinary cards like in any suit.',
             rank_king: 'The King is the highest ordinary card – only Karnöffel, led Devil, Pope and Emperor take him; no half-trump can.',
             rotate_force: 'Show sideways anyway', hint_card: '{card}: {what}',
-            tut_btn: 'Learn from the old soldier', tut_basic: 'The lesson', tut_basic_sub: 'The rules, step by step at the table', tut_coach: 'A game at Konz\'s side', tut_coach_sub: 'Real opponents – he tells you what each card is worth', tut_next: 'Go on', tut_skip: 'Enough learning', tut_done: 'A game at Konz\'s side', tut_to_school: 'To the High School', coach_quit: 'Back to start', tut_step: 'Lesson {n} of {m}', tut_step2: 'High School {n} / {m}', tut_pick: 'Choose a card.', tut_quiz: 'Tap the card that takes the trick.', tut_school: 'The High School', tut_school_sub: 'Twenty tricks – who takes it, and why?', tut_mentor: 'Konz (your partner)', tut_fellow: 'Fellow',
+            tut_btn: 'Learn from the old soldier', tut_basic: 'The lesson', tut_basic_sub: 'The rules, step by step at the table', tut_coach: 'A game at Konz\'s side', tut_coach_sub: 'Real opponents – he tells you what each card is worth', tut_next: 'Go on', tut_skip: 'Enough learning', tut_done: 'A game at Konz\'s side', tut_to_school: 'To the High School', coach_quit: 'Back to start', tut_step: 'Lesson {n} of {m}', tut_step2: 'High School {n} / {m}', tut_pick: 'Choose a card.', tut_quiz: 'Tap the card that takes the trick.', coach_back: '{n} back', tut_school: 'The High School', tut_school_sub: 'Twenty tricks – who takes it, and why?', tut_mentor: 'Konz (your partner)', tut_fellow: 'Fellow',
             gate_line: 'An inhospitable night in the year 1426.', gate_btn: 'Enter', gate_sub: 'with sound',
             prolog_date: 'Anno Domini 1426 · Whitsun Fair at Nördlingen', prolog_sit: 'Sit down with him', prolog_skip: 'I know the game',
             prolog_text: 'Outside, the rain lashes across the market square. Inside it smells of wet wool, tallow and sour wine.\n\nAt the farthest table sits an old soldier, a scar across his face, shuffling a worn deck.\n\n"Karnöffel," he growls without looking up. "The game where the knave beats the Pope.\nThe preachers rail against it – here at the fair it\'s allowed.\n\nSit down. I\'ll show you how to keep your money tonight."',
@@ -1973,17 +1980,25 @@
         const pulse = 1 + 0.07 * Math.sin(c.phase) + 0.03 * Math.sin(c.phase * 2 + 0.7);
         const p = c.speed;
 
-        w.strings.gain.setTargetAtTime(0.9 * (0.55 + 0.5 * p) * pulse, now, 0.06);
-        w.wheelGain.gain.setTargetAtTime(0.02 + 0.03 * p, now, 0.06);
-        w.crackleGain.gain.setTargetAtTime(0.03 + 0.06 * Math.max(0, p - 0.8), now, 0.06);
+        // Nur schreiben, was sich merklich geändert hat: Jeder Schreibzugriff legt ein Ereignis auf die Zeitleiste des
+        // Parameters, und manche Browser räumen alte Ereignisse nicht auf - nach einer Stunde Spiel würde das den Klang
+        // ins Stottern bringen. So bleiben es wenige Ereignisse je Sekunde.
+        const last = c.last || (c.last = {});
+        const set = (key, param, val, tc, eps) => { if (last[key] !== undefined && Math.abs(last[key] - val) < eps) return; last[key] = val; param.setTargetAtTime(val, now, tc); };
+        set('strings', w.strings.gain, 0.9 * (0.55 + 0.5 * p) * pulse, 0.08, 0.012);
+        set('wheel', w.wheelGain.gain, 0.02 + 0.03 * p, 0.08, 0.002);
+        set('crackle', w.crackleGain.gain, 0.03 + 0.06 * Math.max(0, p - 0.8), 0.08, 0.004);
         const bright = 0.75 + 0.45 * (p - 0.8);
-        w.chan.lp.frequency.setTargetAtTime(w.chan.baseLP * bright, now, 0.08);
-        w.drone1.lp.frequency.setTargetAtTime(w.drone1.baseLP * bright, now, 0.08);
-        w.drone2.lp.frequency.setTargetAtTime(w.drone2.baseLP * bright, now, 0.08);
-        w.drone0.lp.frequency.setTargetAtTime(w.drone0.baseLP * bright, now, 0.08);
+        set('lp0', w.chan.lp.frequency, w.chan.baseLP * bright, 0.1, w.chan.baseLP * 0.02);
+        set('lp1', w.drone1.lp.frequency, w.drone1.baseLP * bright, 0.1, w.drone1.baseLP * 0.02);
+        set('lp2', w.drone2.lp.frequency, w.drone2.baseLP * bright, 0.1, w.drone2.baseLP * 0.02);
+        set('lp3', w.drone0.lp.frequency, w.drone0.baseLP * bright, 0.1, w.drone0.baseLP * 0.02);
         const cents = (p - 1) * 1.5 + 0.6 * Math.sin(c.phase);     // Saitenspannung ist fest: nur ein Hauch Drift
-        [w.chan, w.drone0, w.drone1, w.drone2].forEach(s => s.oscs.forEach((o, i) => o.detune.setTargetAtTime((i ? 1 : -1) * 2 + cents, now, 0.06)));
-        w.tromp.detune.setTargetAtTime(cents, now, 0.06);
+        if (last.cents === undefined || Math.abs(last.cents - cents) > 0.25) {
+            last.cents = cents;
+            [w.chan, w.drone0, w.drone1, w.drone2].forEach(s => s.oscs.forEach((o, i) => o.detune.setTargetAtTime((i ? 1 : -1) * 2 + cents, now, 0.1)));
+            w.tromp.detune.setTargetAtTime(cents, now, 0.1);
+        }
     }
 
     function updateHurdyWheelState() {
@@ -2006,7 +2021,7 @@
             hgWheel.master.gain.setValueAtTime(Math.max(0.0001, hgWheel.master.gain.value), now);
             hgWheel.master.gain.exponentialRampToValueAtTime(0.7, now + 0.9);   // das Rad kommt in Schwung
             hgWheel.crank.lastT = now;
-            if (!hgWheel.crank.timer) hgWheel.crank.timer = setInterval(crankTick, 55);
+            if (!hgWheel.crank.timer) hgWheel.crank.timer = setInterval(crankTick, 90);
         } else if (!shouldPlay && hgWheel.isRunning) {
             hgWheel.isRunning = false;
             hgWheel.master.gain.cancelScheduledValues(now);
@@ -3715,135 +3730,100 @@
             { text: 'Those were the rules. Remember four things: only the suit led or a trump wins. Seven trumps, ordered by title. Half-trumps have a limit, and the King stands above all three. The Devil only as a lead. If you want it to stick, come along to the High School – twenty tricks, and each time you tell me who takes it.', last: true }
         ]
     };
-    /* Die Hohe Schule: zwanzig Stiche, jedes Mal die Frage - wer holt ihn? Die Reihenfolge der Karten ist die Spielfolge. */
-    const TUTORIAL2 = {
-        de: [
-            { text: 'Willkommen in der Hohen Schule. Hier wird nicht erklärt, hier wird gefragt. Zwanzig Stiche, und bei jedem sagst du mir, wer ihn holt – tipp auf die Karte. Trumpf sind wieder die Schilten. Fangen wir leicht an: Veit spielt die Neun der Rosen an.',
-              scene: [[1, K('rosen','9')], [2, K('rosen','K')], [3, K('eicheln','O')], [0, K('rosen','U')]], trump: true,
-              quiz: { winner: 'rosen-K', right: 'Mein König der Rosen. Rosen angespielt, kein Trumpf gefallen – die höchste Rose holt den Stich.', wrong: 'Rosen wurden angespielt, kein Trumpf liegt. Welche Rose ist die höchste?' } },
-            { text: 'Der Ober der Eicheln führt an. Dann mein Unter der Eicheln, Lienharts König der Rosen, deine Zwei der Schellen.',
-              scene: [[1, K('eicheln','O')], [2, K('eicheln','U')], [3, K('rosen','K')], [0, K('schellen','2')]], trump: true,
-              quiz: { winner: 'eicheln-O', right: 'Der Ober der Eicheln – er hat angespielt, und keine Eichel ist höher. Lienharts König ist Rose: Papier.', wrong: 'Eicheln wurden angespielt. Ein König der Rosen gilt in einem Eichel-Stich nichts – er ist fremde Farbe.' } },
-            { text: 'Jetzt mit Trumpf. Der König der Rosen führt an, dann mein Kaiser, Lienharts Ober der Rosen, deine Neun der Rosen.',
-              scene: [[1, K('rosen','K')], [2, K('schilten','2')], [3, K('rosen','O')], [0, K('rosen','9')]], trump: true,
-              quiz: { winner: 'schilten-2', right: 'Der Kaiser. Ein echter Trumpf sticht jede gewöhnliche Karte, auch den König, auch die angespielte Farbe.', wrong: 'Der König der Rosen ist hoch – aber die Zwei der Schilten ist der Kaiser, ein echter Trumpf. Trumpf schlägt die angespielte Farbe.' } },
-            { text: 'Zwei echte Trümpfe. Du führst den Kaiser an, Veit wirft den König der Eicheln, ich den Papst, Lienhart den Unter der Rosen.',
-              scene: [[0, K('schilten','2')], [1, K('eicheln','K')], [2, K('schilten','6')], [3, K('rosen','U')]], trump: true,
-              quiz: { winner: 'schilten-6', right: 'Der Papst steht über dem Kaiser. Unter den echten Trümpfen gilt: Karnöffel, Teufel (angespielt), Papst, Kaiser – in dieser Folge.', wrong: 'Kaiser und Papst liegen beide – und der Papst, die Sechs, steht über dem Kaiser, der Zwei.' } },
-            { text: 'Der Papst führt an. Dann der Karnöffel von Veit, mein König der Schilten, Lienharts Teufel.',
-              scene: [[0, K('schilten','6')], [1, K('schilten','U')], [2, K('schilten','K')], [3, K('schilten','7')]], trump: true,
-              quiz: { winner: 'schilten-U', right: 'Der Karnöffel. Nichts schlägt ihn – nicht der Papst, nicht der nachgeworfene Teufel. Mein König der Schilten ist nur eine gewöhnliche Karte.', wrong: 'Der Unter der Schilten ist der Karnöffel. Ihn schlägt nichts. Der Teufel zählt nur, wenn er anführt.' } },
-            { text: 'Lienhart führt den Teufel an. Dann du mit dem Papst, Veit mit dem König der Rosen, ich mit dem Kaiser.',
-              scene: [[3, K('schilten','7')], [0, K('schilten','6')], [1, K('rosen','K')], [2, K('schilten','2')]], trump: true,
-              quiz: { winner: 'schilten-7', right: 'Der angeführte Teufel. Er holt alles außer dem Karnöffel – Papst und Kaiser eingeschlossen. Dein Papst war verschenkt.', wrong: 'Der Teufel hat den Stich angeführt. Als Anspiel schlägt ihn nur der Karnöffel – und der liegt nicht.' } },
-            { text: 'Derselbe Teufel, anders geworfen. Veit spielt die Acht der Rosen an, Lienhart wirft den Teufel, ich den König der Eicheln, du das Banner der Rosen.',
-              scene: [[1, K('rosen','8')], [3, K('schilten','7')], [2, K('eicheln','K')], [0, K('rosen','10')]], trump: true,
-              quiz: { winner: 'rosen-10', right: 'Dein Banner. Der nachgeworfene Teufel ist eine Sieben in fremder Farbe, mein König ebenso fremde Farbe. Die höchste Rose gewinnt.', wrong: 'Der Teufel führte nicht an – also ist er eine Sieben, nichts weiter. Rosen wurden angespielt: Welche Rose ist die höchste?' } },
-            { text: 'Halbe Trümpfe. Der Ober der Rosen führt an, du wirfst die Drei, Veit den Unter der Eicheln, ich die Sieben der Rosen.',
-              scene: [[1, K('rosen','O')], [0, K('schilten','3')], [3, K('eicheln','U')], [2, K('rosen','7')]], trump: true,
-              quiz: { winner: 'schilten-3', right: 'Die Drei. Sie holt alles bis zum Ober, und mehr als ein Ober liegt nicht. Der Unter der Eicheln ist unter ihrer Grenze.', wrong: 'Die Drei der Schilten ist ein halber Trumpf mit der Grenze Ober. Ober, Unter, Sieben – alles darunter. Sie hält den Stich.' } },
-            { text: 'Noch einmal die Drei. Der Ober der Rosen führt an, du wirfst die Drei – und dann kommt Lienhart mit dem König der Schellen. Ich werfe die Zwei der Rosen.',
-              scene: [[1, K('rosen','O')], [0, K('schilten','3')], [3, K('schellen','K')], [2, K('rosen','2')]], trump: true,
-              quiz: { winner: 'schellen-K', right: 'Der König der Schellen. Fremde Farbe – aber über der Grenze der Drei. Kein halber Trumpf hält einen König, und damit ist die Drei geschlagen.', wrong: 'Die Drei hat eine Grenze: der Ober. Ein König steht darüber – und schlägt sie, gleich welcher Farbe.' } },
-            { text: 'Die Vier. Der Unter der Rosen führt an, du wirfst die Vier, Veit die Neun der Rosen, ich die Acht der Eicheln.',
-              scene: [[3, K('rosen','U')], [0, K('schilten','4')], [1, K('rosen','9')], [2, K('eicheln','8')]], trump: true,
-              quiz: { winner: 'schilten-4', right: 'Die Vier. Ihre Grenze ist der Unter – den holt sie gerade noch. Neun und Acht sind darunter.', wrong: 'Die Vier reicht bis zum Unter – einschließlich. Nur Ober und König sind ihr zu hoch.' } },
-            { text: 'Die Vier gegen den Ober. Der Ober der Eicheln führt an, du wirfst die Vier, Veit die Sechs der Eicheln, ich die Drei der Rosen.',
-              scene: [[3, K('eicheln','O')], [0, K('schilten','4')], [1, K('eicheln','6')], [2, K('rosen','3')]], trump: true,
-              quiz: { winner: 'eicheln-O', right: 'Der Ober. Die Vier reicht nur bis zum Unter – ein Ober steht über ihrer Grenze. Darum: Gegen einen Ober nimm die Drei, nicht die Vier.', wrong: 'Die Vier holt keinen Ober. Ihre Grenze ist der Unter. Der Ober der Eicheln hält den Stich.' } },
-            { text: 'Die Fünf. Das Banner der Rosen führt an, du wirfst die Fünf, Veit die Sieben der Rosen, ich die Zwei der Eicheln.',
-              scene: [[1, K('rosen','10')], [0, K('schilten','5')], [3, K('rosen','7')], [2, K('eicheln','2')]], trump: true,
-              quiz: { winner: 'schilten-5', right: 'Die Fünf. Ihre Grenze ist das Banner – das holt sie noch. Sieben und Zwei sind darunter.', wrong: 'Die Fünf reicht bis zum Banner, einschließlich. Unter, Ober, König sind ihr zu hoch – ein Banner nicht.' } },
-            { text: 'Die Fünf gegen den Unter. Der Unter der Schellen führt an, du wirfst die Fünf, Veit die Neun der Schellen, ich die Vier der Rosen.',
-              scene: [[3, K('schellen','U')], [0, K('schilten','5')], [1, K('schellen','9')], [2, K('rosen','4')]], trump: true,
-              quiz: { winner: 'schellen-U', right: 'Der Unter der Schellen. Die Fünf reicht nur bis zum Banner – ein Unter ist ihr zu hoch. Die Neun ist unter dem Unter.', wrong: 'Die Fünf holt keinen Unter. Ihre Grenze ist das Banner. Der Unter hält den Stich.' } },
-            { text: 'Die halben Trümpfe untereinander. Veit spielt die Acht der Rosen an, du wirfst die Fünf, Lienhart die Vier, ich die Neun der Rosen.',
-              scene: [[1, K('rosen','8')], [0, K('schilten','5')], [3, K('schilten','4')], [2, K('rosen','9')]], trump: true,
-              quiz: { winner: 'schilten-4', right: 'Die Vier. Unter den halben Trümpfen steht die Drei über der Vier und die Vier über der Fünf – die niedrigere Zahl ist die stärkere. Die Neun ist unter der Grenze der Vier.', wrong: 'Drei über Vier über Fünf: Je niedriger die Zahl, desto stärker der halbe Trumpf. Die Vier schlägt die Fünf.' } },
-            { text: 'Ein halber Trumpf gegen einen echten. Der König der Eicheln führt an, du wirfst den Kaiser, Veit die Drei, ich den Ober der Eicheln.',
-              scene: [[3, K('eicheln','K')], [0, K('schilten','2')], [1, K('schilten','3')], [2, K('eicheln','O')]], trump: true,
-              quiz: { winner: 'schilten-2', right: 'Der Kaiser. Ein echter Trumpf steht über jedem halben – und über jedem König.', wrong: 'Die Drei ist ein halber Trumpf, der Kaiser ein echter. Der echte steht darüber.' } },
-            { text: 'Die wertlosen Schilten. Veit spielt die Neun der Rosen an, du wirfst den König der Schilten, Lienhart das Banner der Schilten, ich die Sechs der Rosen.',
-              scene: [[1, K('rosen','9')], [0, K('schilten','K')], [3, K('schilten','10')], [2, K('rosen','6')]], trump: true,
-              quiz: { winner: 'rosen-9', right: 'Die Neun der Rosen. König und Banner der Schilten sind keine Trümpfe – gewöhnliche Karten in fremder Farbe, also Papier. Die höchste Rose gewinnt.', wrong: 'König, Ober, Banner, Neun und Acht der Trumpffarbe stechen nicht. Sie sind Schilten in einem Rosen-Stich – fremde Farbe.' } },
-            { text: 'Und wenn die Schilten selbst angespielt werden? Lienhart spielt den König der Schilten an, du wirfst die Neun der Schilten, Veit den König der Rosen, ich die Acht der Schilten.',
-              scene: [[3, K('schilten','K')], [0, K('schilten','9')], [1, K('rosen','K')], [2, K('schilten','8')]], trump: true,
-              quiz: { winner: 'schilten-K', right: 'Der König der Schilten – nicht als Trumpf, sondern als höchste Karte der angespielten Farbe. Der König der Rosen ist fremde Farbe.', wrong: 'Schilten wurden angespielt, und kein Trumpf liegt. Dann gilt die gewöhnliche Ordnung: Der König der Schilten ist die höchste Schilte.' } },
-            { text: 'Ein halber Trumpf führt an. Du spielst die Drei an, Veit wirft den König der Rosen, ich den Ober der Rosen, Lienhart die Zwei der Eicheln.',
-              scene: [[0, K('schilten','3')], [1, K('rosen','K')], [2, K('rosen','O')], [3, K('eicheln','2')]], trump: true,
-              quiz: { winner: 'rosen-K', right: 'Veits König. Die Drei hielt den Stich – bis ein König kam. Darum führt man halbe Trümpfe nicht an, solange Könige im Spiel sind.', wrong: 'Die Drei holt bis zum Ober. Der König der Rosen steht über ihrer Grenze – und nimmt ihr den Stich ab.' } },
-            { text: 'Die Reihenfolge entscheidet. Veit spielt die Fünf der Schilten an, du wirfst den Unter der Rosen, Lienhart die Sieben der Rosen, ich die Zwei der Rosen.',
-              scene: [[1, K('schilten','5')], [0, K('rosen','U')], [3, K('rosen','7')], [2, K('rosen','2')]], trump: true,
-              quiz: { winner: 'rosen-U', right: 'Dein Unter. Die Fünf reicht bis zum Banner, ein Unter ist darüber – also nimmt er ihr den Stich ab, obwohl die Fünf die Farbe bestimmt hat.', wrong: 'Die Fünf hat angeführt, aber ihre Grenze ist das Banner. Dein Unter der Rosen steht darüber.' } },
-            { text: 'Der letzte. Der Ober der Rosen führt an, du wirfst die Vier, Veit den König der Rosen, ich den Karnöffel.',
-              scene: [[3, K('rosen','O')], [0, K('schilten','4')], [1, K('rosen','K')], [2, K('schilten','U')]], trump: true,
-              quiz: { winner: 'schilten-U', right: 'Mein Karnöffel. Deine Vier hält den Ober nicht – egal, denn Veits König hätte sie ohnehin geschlagen. Und den König holt der Karnöffel. So geht ein Stich: Jede Karte muss die vor ihr schlagen, und am Ende zählt nur die letzte, die noch stand.', wrong: 'Vier, König, Karnöffel – jede schlägt die vorige. Der Karnöffel schlägt alles.' } },
-            { text: 'Das war die Hohe Schule. Wer die zwanzig Stiche gesehen hat, kennt jedes Blatt, das am Tisch liegen kann. Jetzt setz dich zu mir – ein echtes Spiel, und ich sage dir bei jeder Karte, was sie taugt.', last: true }
-        ],
-        en: [
-            { text: 'Welcome to the High School. Nothing is explained here, only asked. Twenty tricks, and for each you tell me who takes it – tap the card. Trumps are Shields again. Let us start easy: Veit leads the Nine of Roses.',
-              scene: [[1, K('rosen','9')], [2, K('rosen','K')], [3, K('eicheln','O')], [0, K('rosen','U')]], trump: true,
-              quiz: { winner: 'rosen-K', right: 'My King of Roses. Roses led, no trump fallen – the highest Rose takes the trick.', wrong: 'Roses were led and no trump lies. Which Rose is the highest?' } },
-            { text: 'The Ober of Acorns leads. Then my Unter of Acorns, Lienhart\'s King of Roses, your Two of Bells.',
-              scene: [[1, K('eicheln','O')], [2, K('eicheln','U')], [3, K('rosen','K')], [0, K('schellen','2')]], trump: true,
-              quiz: { winner: 'eicheln-O', right: 'The Ober of Acorns – it led, and no Acorn is higher. Lienhart\'s King is a Rose: paper.', wrong: 'Acorns were led. A King of Roses counts for nothing in an Acorn trick – it is a foreign suit.' } },
-            { text: 'Now with trumps. The King of Roses leads, then my Emperor, Lienhart\'s Ober of Roses, your Nine of Roses.',
-              scene: [[1, K('rosen','K')], [2, K('schilten','2')], [3, K('rosen','O')], [0, K('rosen','9')]], trump: true,
-              quiz: { winner: 'schilten-2', right: 'The Emperor. A true trump beats any ordinary card, the King included, the suit led included.', wrong: 'The King of Roses is high – but the Two of Shields is the Emperor, a true trump. Trump beats the suit led.' } },
-            { text: 'Two true trumps. You lead the Emperor, Veit throws the King of Acorns, I the Pope, Lienhart the Unter of Roses.',
-              scene: [[0, K('schilten','2')], [1, K('eicheln','K')], [2, K('schilten','6')], [3, K('rosen','U')]], trump: true,
-              quiz: { winner: 'schilten-6', right: 'The Pope stands above the Emperor. Among the true trumps: Karnöffel, Devil (led), Pope, Emperor – in that order.', wrong: 'Emperor and Pope both lie – and the Pope, the Six, stands above the Emperor, the Two.' } },
-            { text: 'The Pope leads. Then Veit\'s Karnöffel, my King of Shields, Lienhart\'s Devil.',
-              scene: [[0, K('schilten','6')], [1, K('schilten','U')], [2, K('schilten','K')], [3, K('schilten','7')]], trump: true,
-              quiz: { winner: 'schilten-U', right: 'The Karnöffel. Nothing beats it – not the Pope, not the thrown-in Devil. My King of Shields is only an ordinary card.', wrong: 'The Unter of Shields is the Karnöffel. Nothing beats it. The Devil counts only when he leads.' } },
-            { text: 'Lienhart leads the Devil. Then you with the Pope, Veit with the King of Roses, I with the Emperor.',
-              scene: [[3, K('schilten','7')], [0, K('schilten','6')], [1, K('rosen','K')], [2, K('schilten','2')]], trump: true,
-              quiz: { winner: 'schilten-7', right: 'The led Devil. He takes everything but the Karnöffel – Pope and Emperor included. Your Pope was wasted.', wrong: 'The Devil led the trick. As a lead only the Karnöffel beats him – and it does not lie here.' } },
-            { text: 'The same Devil, thrown differently. Veit leads the Eight of Roses, Lienhart throws the Devil, I the King of Acorns, you the Banner of Roses.',
-              scene: [[1, K('rosen','8')], [3, K('schilten','7')], [2, K('eicheln','K')], [0, K('rosen','10')]], trump: true,
-              quiz: { winner: 'rosen-10', right: 'Your Banner. The thrown-in Devil is a Seven in a foreign suit, my King likewise a foreign suit. The highest Rose wins.', wrong: 'The Devil did not lead – so he is a Seven, nothing more. Roses were led: which Rose is the highest?' } },
-            { text: 'Half-trumps. The Ober of Roses leads, you throw the Three, Veit the Unter of Acorns, I the Seven of Roses.',
-              scene: [[1, K('rosen','O')], [0, K('schilten','3')], [3, K('eicheln','U')], [2, K('rosen','7')]], trump: true,
-              quiz: { winner: 'schilten-3', right: 'The Three. It takes everything up to the Ober, and nothing above an Ober lies here. The Unter of Acorns is below its limit.', wrong: 'The Three of Shields is a half-trump with the Ober as its limit. Ober, Unter, Seven – all below. It holds the trick.' } },
-            { text: 'The Three once more. The Ober of Roses leads, you throw the Three – and then Lienhart comes with the King of Bells. I throw the Two of Roses.',
-              scene: [[1, K('rosen','O')], [0, K('schilten','3')], [3, K('schellen','K')], [2, K('rosen','2')]], trump: true,
-              quiz: { winner: 'schellen-K', right: 'The King of Bells. A foreign suit – but above the Three\'s limit. No half-trump holds a King, and so the Three is beaten.', wrong: 'The Three has a limit: the Ober. A King stands above it – and beats it, whatever its suit.' } },
-            { text: 'The Four. The Unter of Roses leads, you throw the Four, Veit the Nine of Roses, I the Eight of Acorns.',
-              scene: [[3, K('rosen','U')], [0, K('schilten','4')], [1, K('rosen','9')], [2, K('eicheln','8')]], trump: true,
-              quiz: { winner: 'schilten-4', right: 'The Four. Its limit is the Unter – it just takes him. Nine and Eight are below.', wrong: 'The Four reaches up to the Unter – inclusive. Only Ober and King are too high for it.' } },
-            { text: 'The Four against the Ober. The Ober of Acorns leads, you throw the Four, Veit the Six of Acorns, I the Three of Roses.',
-              scene: [[3, K('eicheln','O')], [0, K('schilten','4')], [1, K('eicheln','6')], [2, K('rosen','3')]], trump: true,
-              quiz: { winner: 'eicheln-O', right: 'The Ober. The Four reaches only up to the Unter – an Ober stands above its limit. So: against an Ober take the Three, not the Four.', wrong: 'The Four takes no Ober. Its limit is the Unter. The Ober of Acorns holds the trick.' } },
-            { text: 'The Five. The Banner of Roses leads, you throw the Five, Veit the Seven of Roses, I the Two of Acorns.',
-              scene: [[1, K('rosen','10')], [0, K('schilten','5')], [3, K('rosen','7')], [2, K('eicheln','2')]], trump: true,
-              quiz: { winner: 'schilten-5', right: 'The Five. Its limit is the Banner – it still takes that. Seven and Two are below.', wrong: 'The Five reaches up to the Banner, inclusive. Unter, Ober, King are too high for it – a Banner is not.' } },
-            { text: 'The Five against the Unter. The Unter of Bells leads, you throw the Five, Veit the Nine of Bells, I the Four of Roses.',
-              scene: [[3, K('schellen','U')], [0, K('schilten','5')], [1, K('schellen','9')], [2, K('rosen','4')]], trump: true,
-              quiz: { winner: 'schellen-U', right: 'The Unter of Bells. The Five reaches only up to the Banner – an Unter is too high for it. The Nine is below the Unter.', wrong: 'The Five takes no Unter. Its limit is the Banner. The Unter holds the trick.' } },
-            { text: 'Half-trumps among themselves. Veit leads the Eight of Roses, you throw the Five, Lienhart the Four, I the Nine of Roses.',
-              scene: [[1, K('rosen','8')], [0, K('schilten','5')], [3, K('schilten','4')], [2, K('rosen','9')]], trump: true,
-              quiz: { winner: 'schilten-4', right: 'The Four. Among the half-trumps the Three stands above the Four and the Four above the Five – the lower number is the stronger. The Nine is below the Four\'s limit.', wrong: 'Three above Four above Five: the lower the number, the stronger the half-trump. The Four beats the Five.' } },
-            { text: 'A half-trump against a true one. The King of Acorns leads, you throw the Emperor, Veit the Three, I the Ober of Acorns.',
-              scene: [[3, K('eicheln','K')], [0, K('schilten','2')], [1, K('schilten','3')], [2, K('eicheln','O')]], trump: true,
-              quiz: { winner: 'schilten-2', right: 'The Emperor. A true trump stands above every half-trump – and above every King.', wrong: 'The Three is a half-trump, the Emperor a true one. The true one stands above.' } },
-            { text: 'The worthless Shields. Veit leads the Nine of Roses, you throw the King of Shields, Lienhart the Banner of Shields, I the Six of Roses.',
-              scene: [[1, K('rosen','9')], [0, K('schilten','K')], [3, K('schilten','10')], [2, K('rosen','6')]], trump: true,
-              quiz: { winner: 'rosen-9', right: 'The Nine of Roses. King and Banner of Shields are no trumps – ordinary cards in a foreign suit, so paper. The highest Rose wins.', wrong: 'King, Ober, Banner, Nine and Eight of the trump suit do not beat anything. They are Shields in a Rose trick – a foreign suit.' } },
-            { text: 'And when Shields themselves are led? Lienhart leads the King of Shields, you throw the Nine of Shields, Veit the King of Roses, I the Eight of Shields.',
-              scene: [[3, K('schilten','K')], [0, K('schilten','9')], [1, K('rosen','K')], [2, K('schilten','8')]], trump: true,
-              quiz: { winner: 'schilten-K', right: 'The King of Shields – not as a trump, but as the highest card of the suit led. The King of Roses is a foreign suit.', wrong: 'Shields were led and no trump lies. Then the ordinary order holds: the King of Shields is the highest Shield.' } },
-            { text: 'A half-trump leads. You lead the Three, Veit throws the King of Roses, I the Ober of Roses, Lienhart the Two of Acorns.',
-              scene: [[0, K('schilten','3')], [1, K('rosen','K')], [2, K('rosen','O')], [3, K('eicheln','2')]], trump: true,
-              quiz: { winner: 'rosen-K', right: 'Veit\'s King. The Three held the trick – until a King came. That is why you do not lead half-trumps while Kings are still in play.', wrong: 'The Three takes up to the Ober. The King of Roses stands above its limit – and takes the trick from it.' } },
-            { text: 'The order decides. Veit leads the Five of Shields, you throw the Unter of Roses, Lienhart the Seven of Roses, I the Two of Roses.',
-              scene: [[1, K('schilten','5')], [0, K('rosen','U')], [3, K('rosen','7')], [2, K('rosen','2')]], trump: true,
-              quiz: { winner: 'rosen-U', right: 'Your Unter. The Five reaches up to the Banner, an Unter is above – so he takes the trick from it, although the Five set the suit.', wrong: 'The Five led, but its limit is the Banner. Your Unter of Roses stands above it.' } },
-            { text: 'The last one. The Ober of Roses leads, you throw the Four, Veit the King of Roses, I the Karnöffel.',
-              scene: [[3, K('rosen','O')], [0, K('schilten','4')], [1, K('rosen','K')], [2, K('schilten','U')]], trump: true,
-              quiz: { winner: 'schilten-U', right: 'My Karnöffel. Your Four does not hold the Ober – no matter, Veit\'s King would have beaten it anyway. And the King is taken by the Karnöffel. That is how a trick goes: each card must beat the one before it, and in the end only the last one still standing counts.', wrong: 'Four, King, Karnöffel – each beats the one before. The Karnöffel beats everything.' } },
-            { text: 'That was the High School. Whoever has seen these twenty tricks knows every hand that can lie on the table. Now sit down with me – a real game, and I tell you at every card what it is worth.', last: true }
-        ]
+    /* Die Hohe Schule würfelt ihre Stiche: jedes Mal andere Karten, andere Sitze, andere Reihenfolge - aber jeder Stich
+       prüft eine bestimmte Regel, und die Erklärung passt zu genau diesem Stich. Der Sieger wird von der Spiel-Engine
+       berechnet, nie von Hand gesetzt. */
+    const SQ = {
+        de: {
+            you: 'du', me: 'ich', leads: { you: 'Du spielst {c} an', me: 'Ich spiele {c} an', other: '{n} spielt {c} an' }, throws: { you: 'du wirfst {c}', me: 'ich werfe {c}', other: '{n} wirft {c}' },
+            intro: 'Willkommen in der Hohen Schule. Hier wird nicht erklärt, hier wird gefragt. Zwanzig Stiche, jedes Mal neu gemischt, und bei jedem sagst du mir, wer ihn holt – tipp auf die Karte. Trumpf sind wieder die Schilten. Fangen wir an.',
+            outro: 'Das war die Hohe Schule. Wer zwanzig solcher Stiche gesehen hat, kennt jedes Blatt, das am Tisch liegen kann – und beim nächsten Mal sind es zwanzig andere. Jetzt setz dich zu mir: ein echtes Spiel, und ich sage dir bei jeder Karte, was sie taugt.',
+            no: 'Nein. ',
+            plain: ['{w}: {l} wurden angespielt, kein Trumpf liegt – die höchste Karte dieser Farbe holt den Stich. {f} ist fremde Farbe: Papier.', '{l} wurden angespielt und kein Trumpf liegt. Nur {l} können gewinnen – {f} ist fremde Farbe. Welche ist die höchste {l}?'],
+            trumpKing: ['{w}. Ein echter Trumpf sticht jede gewöhnliche Karte – auch {k}, auch die angespielte Farbe.', '{k} ist hoch – aber {w} ist ein echter Trumpf, und Trumpf schlägt die angespielte Farbe.'],
+            popeEmp: ['{w}: Der Papst steht über dem Kaiser. Unter den echten Trümpfen gilt Karnöffel, Teufel (angespielt), Papst, Kaiser – in dieser Folge.', 'Kaiser und Papst liegen beide – und der Papst, die Sechs, steht über dem Kaiser, der Zwei.'],
+            karn: ['{w}. Nichts schlägt den Karnöffel – kein Papst, kein Kaiser, kein nachgeworfener Teufel, kein König.', 'Der Unter der Schilten ist der Karnöffel. Ihn schlägt nichts auf der Welt.'],
+            devilLed: ['{w}: Der angeführte Teufel holt alles außer dem Karnöffel – Papst und Kaiser eingeschlossen.', 'Der Teufel hat den Stich angeführt. Als Anspiel schlägt ihn nur der Karnöffel – und der liegt nicht.'],
+            devilThrown: ['{w}. Der nachgeworfene Teufel ist eine Sieben in fremder Farbe – nichts. {l} wurden angespielt, die höchste {l} gewinnt.', 'Der Teufel führte nicht an – also ist er eine Sieben, nichts weiter. {l} wurden angespielt: Welche {l} ist die höchste?'],
+            halfHolds: ['{w}: Ein halber Trumpf holt alles bis {lim}, und mehr liegt hier nicht.', '{h} ist ein halber Trumpf mit der Grenze bis {lim}. Alles auf dem Tisch liegt darunter – {h} hält den Stich.'],
+            halfBeaten: ['{w}: über der Grenze von {h} (bis {lim}) – und schlägt den halben Trumpf, gleich welcher Farbe.', '{h} reicht nur bis {lim}. {w} steht darüber – und nimmt den Stich, obwohl fremde Farbe.'],
+            halfHalf: ['{w}. Unter den halben Trümpfen steht die Drei über der Vier und die Vier über der Fünf – die niedrigere Zahl ist die stärkere.', 'Drei über Vier über Fünf: Je niedriger die Zahl, desto stärker der halbe Trumpf.'],
+            deadTrump: ['{w}: {l} wurden angespielt. {d} ist kein Trumpf – König, Ober, Banner, Neun und Acht der Trumpffarbe sind gewöhnliche Karten, in fremder Farbe also Papier.', 'König, Ober, Banner, Neun und Acht der Trumpffarbe stechen nicht. {d} ist eine Schilte in einem {l}-Stich – fremde Farbe.'],
+            trumpLed: ['{w} – nicht als Trumpf, sondern als höchste Karte der angespielten Farbe. Kein echter oder halber Trumpf liegt; {f} ist fremde Farbe.', 'Schilten wurden angespielt, und kein Trumpf liegt. Dann gilt die gewöhnliche Ordnung: Die höchste Schilte gewinnt.'],
+            halfLeads: ['{w}. {h} führte an und hielt den Stich – bis eine Karte über ihrer Grenze (bis {lim}) kam. Darum führt man halbe Trümpfe nicht an, solange die hohen Karten draußen sind.', '{h} holt nur bis {lim}. {w} steht über ihrer Grenze – und nimmt ihr den Stich ab, obwohl {h} die Farbe bestimmt hat.'],
+            fullVsHalf: ['{w}. Ein echter Trumpf steht über jedem halben Trumpf – und über jedem König.', '{h} ist ein halber Trumpf, {w} ein echter. Der echte steht darüber.']
+        },
+        en: {
+            you: 'you', me: 'I', leads: { you: 'You lead {c}', me: 'I lead {c}', other: '{n} leads {c}' }, throws: { you: 'you throw {c}', me: 'I throw {c}', other: '{n} throws {c}' },
+            intro: 'Welcome to the High School. Nothing is explained here, only asked. Twenty tricks, freshly shuffled every time, and for each you tell me who takes it – tap the card. Trumps are Shields again. Let us begin.',
+            outro: 'That was the High School. Whoever has seen twenty such tricks knows every hand that can lie on the table – and next time it will be twenty different ones. Now sit down with me: a real game, and I tell you at every card what it is worth.',
+            no: 'No. ',
+            plain: ['{w}: {l} were led and no trump lies – the highest card of that suit takes the trick. {f} is a foreign suit: paper.', '{l} were led and no trump lies. Only {l} can win – {f} is a foreign suit. Which is the highest {l}?'],
+            trumpKing: ['{w}. A true trump beats any ordinary card – {k} included, the suit led included.', '{k} is high – but {w} is a true trump, and trump beats the suit led.'],
+            popeEmp: ['{w}: the Pope stands above the Emperor. Among the true trumps: Karnöffel, Devil (led), Pope, Emperor – in that order.', 'Emperor and Pope both lie – and the Pope, the Six, stands above the Emperor, the Two.'],
+            karn: ['{w}. Nothing beats the Karnöffel – no Pope, no Emperor, no thrown-in Devil, no King.', 'The Unter of Shields is the Karnöffel. Nothing in the world beats it.'],
+            devilLed: ['{w}: the led Devil takes everything but the Karnöffel – Pope and Emperor included.', 'The Devil led the trick. As a lead only the Karnöffel beats him – and it does not lie here.'],
+            devilThrown: ['{w}. The thrown-in Devil is a Seven in a foreign suit – nothing. {l} were led, the highest {l} wins.', 'The Devil did not lead – so he is a Seven, nothing more. {l} were led: which {l} is the highest?'],
+            halfHolds: ['{w}: a half-trump takes everything up to {lim}, and nothing higher lies here.', '{h} is a half-trump with its limit at {lim}. Everything on the table is below – {h} holds the trick.'],
+            halfBeaten: ['{w}: above the limit of {h} (up to {lim}) – and beats the half-trump, whatever its suit.', '{h} reaches only up to {lim}. {w} stands above – and takes the trick, although a foreign suit.'],
+            halfHalf: ['{w}. Among the half-trumps the Three stands above the Four and the Four above the Five – the lower number is the stronger.', 'Three above Four above Five: the lower the number, the stronger the half-trump.'],
+            deadTrump: ['{w}: {l} were led. {d} is no trump – King, Ober, Banner, Nine and Eight of the trump suit are ordinary cards, in a foreign suit mere paper.', 'King, Ober, Banner, Nine and Eight of the trump suit do not beat anything. {d} is a Shield in a {l} trick – a foreign suit.'],
+            trumpLed: ['{w} – not as a trump, but as the highest card of the suit led. No true or half-trump lies; {f} is a foreign suit.', 'Shields were led and no trump lies. Then the ordinary order holds: the highest Shield wins.'],
+            halfLeads: ['{w}. {h} led and held the trick – until a card above its limit (up to {lim}) came. That is why you do not lead half-trumps while the high cards are still out.', '{h} takes only up to {lim}. {w} stands above its limit – and takes the trick, although {h} set the suit.'],
+            fullVsHalf: ['{w}. A true trump stands above every half-trump – and above every King.', '{h} is a half-trump, {w} a true one. The true one stands above.']
+        }
     };
+    function schoolQuizzes(lang) {
+        const Q = SQ[lang] || SQ.de, de = (Q === SQ.de);
+        const t = TUT_TRUMP, others = SUITS.map(s => s.id).filter(s => s !== t);
+        const rnd = a => a[Math.floor(Math.random() * a.length)];
+        const P = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'U', 'O', 'K'];
+        const below = r => P.filter(x => NORMAL_RANK_ORDER[x] < NORMAL_RANK_ORDER[r]);
+        const above = r => P.filter(x => NORMAL_RANK_ORDER[x] > NORMAL_RANK_ORDER[r]);
+        const lim = { '3': 'O', '4': 'U', '5': '10' };
+        const limWord = h => C(h === '3' ? 'lim_O' : h === '4' ? 'lim_U' : 'lim_10');
+        const seatName = i => i === 0 ? Q.you : i === 2 ? Q.me : (i === 1 ? 'Veit' : 'Lienhart');
+        const nm = c => cardName(c);
+        const sentence = (cards, leader) => cards.map((c, k) => { const s = (leader + k) % 4; const key = s === 0 ? 'you' : s === 2 ? 'me' : 'other'; const tpl = k === 0 ? Q.leads[key] : Q.throws[key]; return tpl.replace('{c}', nm(c)).replace('{n}', seatName(s)); }).join(', ') + '.';
+        const fill = (tpl, p) => { for (const k in p) tpl = tpl.split('{' + k + '}').join(p[k]); return tpl; };
+        const low = (suit, exclude = []) => { const pool = ['2', '3', '4', '5', '6', '7', '8', '9'].filter(r => !exclude.includes(suit + '-' + r)); return K(suit, rnd(pool)); };
+        const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+        // Jeder Erzeuger liefert: Karten in Spielfolge, erwarteter Sieger, Platzhalter für die Erklärung
+        const gens = {
+            plain() { const L = rnd(others), F = rnd(others.filter(s => s !== L)); const x = rnd(['4', '6', '8', '9', '10']), y = rnd(above(x).filter(r => r !== 'K' || Math.random() < 0.5)); const f = K(F, rnd(['K', 'O'])); const cards = shuffle([K(L, y), f, low(rnd(others.filter(s => s !== L)))]); return { cards: [K(L, x), ...cards], win: K(L, y), p: { l: suitName(L), f: nm(f) } }; },
+            trumpKing() { const L = rnd(others); const tr = K(t, rnd(['2', '6'])); const k = K(L, 'K'); const cards = shuffle([tr, K(L, rnd(['O', 'U', '10'])), low(rnd(others.filter(s => s !== L)))]); return { cards: [k, ...cards], win: tr, p: { k: nm(k) } }; },
+            popeEmp() { const L = rnd(others); const cards = shuffle([K(t, '6'), K(t, '2'), K(rnd(others), rnd(['K', 'O']))]); const lead = rnd([K(L, rnd(['K', 'O', '10'])), null]); const all = lead ? [lead, ...cards] : [...cards, low(rnd(others))]; return { cards: all, win: K(t, '6'), p: {} }; },
+            karn() { const L = rnd(others); const cards = shuffle([K(t, 'U'), K(t, rnd(['6', '2'])), K(rnd(others), 'K')]); const lead = Math.random() < 0.5 ? K(t, rnd(['6', '2', '7'])).rank === '7' ? K(t, '7') : K(L, 'K') : K(L, rnd(['O', '10'])); const all = [lead, ...cards.filter(c => !sameCard(c, lead))]; while (all.length < 4) all.push(low(rnd(others), all.map(cardId))); return { cards: all, win: K(t, 'U'), p: {} }; },
+            devilLed() { const cards = shuffle([K(t, rnd(['6', '2'])), K(rnd(others), 'K'), K(rnd(others), rnd(['O', 'U']))]); return { cards: [K(t, '7'), ...cards], win: K(t, '7'), p: {} }; },
+            devilThrown() { const L = rnd(others); const x = rnd(['5', '6', '7', '8']), y = rnd(above(x)); const cards = shuffle([K(t, '7'), K(L, y), K(rnd(others.filter(s => s !== L)), rnd(['K', 'O']))]); return { cards: [K(L, x), ...cards], win: K(L, y), p: { l: suitName(L) } }; },
+            halfHolds() { const L = rnd(others); const h = rnd(['3', '4', '5']); const okRanks = P.filter(r => NORMAL_RANK_ORDER[r] <= NORMAL_RANK_ORDER[lim[h]]); const x = rnd(okRanks.filter(r => NORMAL_RANK_ORDER[r] >= NORMAL_RANK_ORDER['7'])); const rest = shuffle([K(t, h), K(rnd(others.filter(s => s !== L)), rnd(okRanks.filter(r => r !== x))), low(L, [L + '-' + x])]); return { cards: [K(L, x), ...rest], win: K(t, h), p: { h: nm(K(t, h)), lim: limWord(h) } }; },
+            halfBeaten() { const L = rnd(others); const h = rnd(['3', '4', '5']); const x = rnd(P.filter(r => NORMAL_RANK_ORDER[r] <= NORMAL_RANK_ORDER[lim[h]] && NORMAL_RANK_ORDER[r] >= NORMAL_RANK_ORDER['8'])); const over = rnd(above(lim[h])); const B = rnd(others.filter(s => s !== L)); const w = K(B, over); const cards = [K(L, x), K(t, h), w, low(rnd(others), [L + '-' + x])]; return { cards, win: w, p: { h: nm(K(t, h)), lim: limWord(h) } }; },
+            halfHalf() { const L = rnd(others); const pair = rnd([['5', '4'], ['4', '3'], ['5', '3']]); const order = Math.random() < 0.5 ? pair : [pair[1], pair[0]]; const x = rnd(['2', '4', '6', '8']); const cards = [K(L, x), K(t, order[0]), K(t, order[1]), low(rnd(others), [L + '-' + x])]; return { cards, win: K(t, pair[1]), p: {} }; },
+            deadTrump() { const L = rnd(others); const d = K(t, rnd(['K', 'O', '10', '9', '8'])); const x = rnd(['7', '8', '9', '10', 'U']); const cards = shuffle([d, low(L, [L + '-' + x]), low(rnd(others.filter(s => s !== L)))]); return { cards: [K(L, x), ...cards], win: K(L, x), p: { l: suitName(L), d: nm(d) } }; },
+            trumpLed() { const lead = K(t, rnd(['K', 'O'])); const f = K(rnd(others), 'K'); const rest = shuffle([K(t, rnd(lead.rank === 'K' ? ['O', '10', '9'] : ['10', '9', '8'])), f, K(t, rnd(['8', '9']))]); const cards = [lead, ...rest.filter((c, i, a) => a.findIndex(z => sameCard(z, c)) === i)]; while (cards.length < 4) cards.push(low(rnd(others), cards.map(cardId))); return { cards, win: lead, p: { f: nm(f) } }; },
+            halfLeads() { const h = rnd(['3', '4', '5']); const over = rnd(above(lim[h])); const B = rnd(others); const w = K(B, over); const cards = [K(t, h), ...shuffle([w, low(rnd(others)), K(rnd(others.filter(s => s !== B)), rnd(below(lim[h]).filter(r => r !== '2')))])]; return { cards, win: w, p: { h: nm(K(t, h)), lim: limWord(h) } }; },
+            fullVsHalf() { const L = rnd(others); const h = rnd(['3', '4', '5']); const tr = K(t, rnd(['2', '6'])); const cards = [K(L, 'K'), ...shuffle([K(t, h), tr, K(rnd(others.filter(s => s !== L)), rnd(['O', '10']))])]; return { cards, win: tr, p: { h: nm(K(t, h)) } }; }
+        };
+        const order = shuffle(Object.keys(gens)); while (order.length < 20) order.push(rnd(Object.keys(gens)));
+        const steps = [{ text: Q.intro }];
+        for (const name of order.slice(0, 20)) {
+            let q = null;
+            for (let tries = 0; tries < 20 && !q; tries++) {
+                const g = gens[name](); const ids = g.cards.map(cardId);
+                if (new Set(ids).size !== 4) continue;
+                const leader = Math.floor(Math.random() * 4);
+                const scene = g.cards.map((c, k) => [(leader + k) % 4, c]);
+                const { winnerPlay } = trickWinner(scene.map(([seat, card]) => ({ seat, card })), t);
+                if (cardId(winnerPlay.card) !== cardId(g.win)) continue;   // die Engine hat das letzte Wort
+                const p = Object.assign({ w: nm(g.win), l: suitName(g.cards[0].suit) }, g.p);
+                q = { text: sentence(g.cards, leader), scene, trump: true, quiz: { winner: cardId(g.win), right: fill(Q[name][0], p), wrong: Q.no + fill(Q[name][1], p) } };
+            }
+            if (q) steps.push(q);
+        }
+        steps.push({ text: Q.outro, last: true });
+        return steps;
+    }
+
     let tut = null;
 
     function prologueShouldRun() {
@@ -4104,8 +4084,7 @@
         ensureAudioReady();
         if (!isMusicPlaying) toggleMusicMaster();
         course = course === 2 ? 2 : 1;
-        const src = course === 2 ? TUTORIAL2 : TUTORIAL;
-        tut = { steps: src[LANG] || src.de, i: -1, busy: false, picked: false, course };
+        tut = { steps: course === 2 ? schoolQuizzes(LANG) : (TUTORIAL[LANG] || TUTORIAL.de), i: -1, busy: false, picked: false, course };
         showScreen('game');
         ['score-wrap', 'log-wrap'].forEach(id => document.getElementById(id).style.display = 'none');
         document.getElementById('lesson-box').style.display = 'flex';
@@ -4301,7 +4280,14 @@
             adv_lead_strong: ['Rat: Führ mit {card} an – das zwingt sie, Trumpf zu opfern oder den Stich zu lassen.', 'Rat: {card} voran. Sollen sie zeigen, was sie haben.'],
             adv_lead_probe: ['Rat: Führ {card} an und schau, was sie haben; die hohen Karten hältst du für später.', 'Rat: Fühl erst mit {card} vor. Die Herren bleiben in der Hand, bis die Trümpfe gefallen sind.'],
             count_none: 'Noch kein echter Trumpf gefallen – Könige sind nicht sicher. ', count_some: 'Gefallen: {list}. ', count_all: 'Alle echten Trümpfe sind gefallen – jetzt zählen die Könige. ',
-            interj: ['Hm. ', 'Sieh an. ', 'Nun denn. ', 'Beim Barte des Papstes – ', 'Also. ', 'Pass auf. '],
+            interj: ['Hm. ', 'Sieh an. ', 'Nun denn. ', 'Beim Barte des Papstes – ', 'Also. ', 'Pass auf. ', 'So, so. ', 'Hör zu. '],
+            sit_pope: ['Gegen den Papst hilft nur der Karnöffel. ', 'Der Papst liegt – da kommt nur noch der Karnöffel drüber. '],
+            sit_kaiser: ['Den Kaiser nehmen nur Papst und Karnöffel. ', 'Gegen den Kaiser bleibt dir nur ein Papst oder der Karnöffel. '],
+            sit_hold_karn: ['Den Karnöffel hebst du auf, bis es zählt. ', 'Der Karnöffel bleibt in der Hand – er ist der Stich, den dir niemand nimmt. '],
+            sit_hold_devil: ['Den Teufel hältst du fürs Anspiel. ', 'Der Teufel wartet – als Anspiel, nicht als Abwurf. '],
+            sit_one_more: ['Einer noch, dann ist die Runde unser. ', 'Zwei haben wir – der dritte entscheidet. '],
+            sit_foe_two: ['Die haben zwei. Den hier dürfen sie nicht kriegen. ', 'Noch ein Stich für die, und die Runde ist weg. '],
+            sit_late: ['Zwei Karten noch – jetzt wird abgerechnet. ', 'Die letzten beiden. Zähl nach, was draußen ist. '],
             top_now: '{card} ist jetzt die höchste Karte im Spiel. ', adv_last: ['Rat: Die letzte Karte – {card}. Viel zu wählen gibt es nicht.', 'Rat: {card}, mehr hast du nicht. Dann los.'],
             you_played: 'Du: {card}. ', good: ['Gut gewählt.', 'So macht man das.', 'Recht so.', 'Sauber.', 'Das hätte ich auch getan.'], ok: 'Geht. {hint}', bad: '{hint}',
             trick_won_you: ['Dein Stich! {card} – {why}', 'Deiner! {card} – {why}', 'Der gehört dir: {card} – {why}'], trick_won_partner: ['Mein Stich: {card} – {why}', 'Den nehm ich: {card} – {why}'], trick_lost: ['{name} nimmt ihn mit {card} – {why}', '{name} holt ihn sich: {card} – {why}', 'Weg ist er – {name}, mit {card}: {why}'],
@@ -4332,7 +4318,14 @@
             adv_lead_strong: ['Advice: lead {card} – it forces them to spend a trump or let the trick go.', 'Advice: {card} first. Let them show what they have.'],
             adv_lead_probe: ['Advice: lead {card} and see what they have; keep the high cards for later.', 'Advice: feel your way with {card} first. The lords stay in your hand until the trumps have fallen.'],
             count_none: 'No true trump has fallen yet – Kings are not safe. ', count_some: 'Fallen: {list}. ', count_all: 'All true trumps have fallen – now the Kings count. ',
-            interj: ['Hm. ', 'Well now. ', 'So. ', 'By the Pope\'s beard – ', 'Mind you. ', 'Look here. '],
+            interj: ['Hm. ', 'Well now. ', 'So. ', 'By the Pope\'s beard – ', 'Mind you. ', 'Look here. ', 'Listen. ', 'Right. '],
+            sit_pope: ['Against the Pope only the Karnöffel helps. ', 'The Pope lies there – only the Karnöffel goes over him. '],
+            sit_kaiser: ['Only Pope and Karnöffel take the Emperor. ', 'Against the Emperor you have only a Pope or the Karnöffel. '],
+            sit_hold_karn: ['Keep the Karnöffel until it counts. ', 'The Karnöffel stays in your hand – it is the trick nobody takes from you. '],
+            sit_hold_devil: ['Keep the Devil for a lead. ', 'The Devil waits – as a lead, not as a throw-away. '],
+            sit_one_more: ['One more and the round is ours. ', 'We have two – the third decides. '],
+            sit_foe_two: ['They have two. They must not get this one. ', 'One more trick for them and the round is gone. '],
+            sit_late: ['Two cards left – now we settle up. ', 'The last two. Count what is still out. '],
             top_now: '{card} is now the highest card in play. ', adv_last: ['Advice: the last card – {card}. Not much to choose.', 'Advice: {card}, that is all you have. Go on then.'],
             you_played: 'You: {card}. ', good: ['Well chosen.', 'That\'s the way.', 'Quite right.', 'Clean.', 'I would have done the same.'], ok: 'It works. {hint}', bad: '{hint}',
             trick_won_you: ['Your trick! {card} – {why}', 'Yours! {card} – {why}', 'That one is yours: {card} – {why}'], trick_won_partner: ['My trick: {card} – {why}', 'I\'ll take that: {card} – {why}'], trick_lost: ['{name} takes it with {card} – {why}', '{name} helps himself: {card} – {why}', 'Gone – {name}, with {card}: {why}'],
@@ -4356,8 +4349,31 @@
             : (de ? 'Trumpffarbe, aber ohne Stichkraft' : 'chosen suit, but no trump power');
         return n + ' (' + tag + ')';
     }
+    // Kartennamen in Konz' Worten golden hervorheben - samt Titel in Klammern ("Schilten-7 (der Teufel)")
+    function goldCards(html) {
+        const su = Object.values(T('suits')).join('|'), rk = Object.values(T('ranks')).join('|');
+        const re = new RegExp('(?<![\\w>])((?:' + su + ')-(?:' + rk + '|\\d+)(?: \\([^)]*\\))?)', 'g');
+        return html.replace(re, '<span class="cn">$1</span>');
+    }
     function coachSay(text) {
+        text = goldCards(text);
         const box = document.getElementById('lesson-text'); box.classList.remove('again'); void box.offsetWidth; box.classList.add('again'); box.innerHTML = text;
+        if (coach) { coach.hist = coach.hist || []; coach.hist.push(text); if (coach.hist.length > 12) coach.hist.shift(); coach.histIdx = -1; coachHistLabel(); }
+    }
+    // Rückblick: was Konz zuvor gesagt hat, Schritt für Schritt zurück - und am Ende wieder nach vorn
+    function coachHistLabel() {
+        const step = document.getElementById('lesson-step'), btn = document.getElementById('lesson-prev');
+        if (!coach) return;
+        btn.style.display = coach.hist && coach.hist.length > 1 ? '' : 'none';
+        step.textContent = coach.histIdx >= 0 ? 'Konz · ' + T('coach_back', { n: coach.histIdx + 1 }) : 'Konz';
+        btn.classList.toggle('open', coach.histIdx >= 0);
+    }
+    function coachHistBack() {
+        if (!coach || !coach.hist || coach.hist.length < 2) return;
+        const box = document.getElementById('lesson-text');
+        coach.histIdx = coach.histIdx + 1 >= coach.hist.length - 1 ? -1 : coach.histIdx + 1;   // ganz hinten angekommen: zurück zum Jetzt
+        box.innerHTML = coach.hist[coach.hist.length - 1 - (coach.histIdx < 0 ? 0 : coach.histIdx)];
+        coachHistLabel();
     }
     function describeCard(card, trick, trump) {
         const first = trick.length === 0;
@@ -4401,8 +4417,15 @@
             else adv = C('adv_lose', { card: coachCard(rec, trump, false) });
         }
         if (hand.length === 1) adv = C('adv_last', { card: coachCard(hand[0], trump, trick.length === 0) });
-        if (v.trickNumber > 0) head = (Math.random() < 0.25 ? C('interj') : '') + head + coachCount(v);
-        else if (Math.random() < 0.25) head = C('interj') + head;
+        // Lage: was gerade auf dem Spiel steht, und was man in der Hand hält
+        let sit = '';
+        if (trick.length) { const w = trickWinner(trick, trump).winnerPlay.card; if (w.suit === trump && w.rank === '6' && !(rec.suit === trump && rec.rank === 'U')) sit += C('sit_pope'); else if (w.suit === trump && w.rank === '2' && !(rec.suit === trump && 'U6'.includes(rec.rank))) sit += C('sit_kaiser'); }
+        if (v.hand.some(c => c.suit === trump && c.rank === 'U') && !(rec.suit === trump && rec.rank === 'U')) sit += C('sit_hold_karn');
+        if (trick.length && v.hand.some(c => c.suit === trump && c.rank === '7') && !(rec.suit === trump && rec.rank === '7')) sit += C('sit_hold_devil');
+        if (v.roundTricks && v.roundTricks[0] === 2) sit += C('sit_one_more'); else if (v.roundTricks && v.roundTricks[1] === 2) sit += C('sit_foe_two');
+        else if (v.hand.length === 2 && trick.length === 0) sit += C('sit_late');
+        if (v.trickNumber > 0) head = (Math.random() < 0.25 ? C('interj') : '') + head + coachCount(v) + sit;
+        else head = (Math.random() < 0.25 ? C('interj') : '') + head + sit;
         coach.rec = rec;
         coachSay(head + '<br>' + opts + '<br><b>' + adv + '</b>');
     }
@@ -4417,24 +4440,37 @@
         return out;
     }
     function coachReview(v) {
-        // Nach deiner Karte: war sie klug?
+        // Nach deiner Karte: war sie klug? Das Urteil wird aufgehoben - für die Bilanz am Ende der Runde
         const played = v.trick.find(p => p.seat === 0); if (!played) return;
         const before = v.trick.slice(0, v.trick.findIndex(p => p.seat === 0));
-        const trump = v.trump;
-        let verdict;
-        if (coach.rec && sameCard(coach.rec, played.card)) verdict = C('good');
-        else {
-            const wins = before.length ? doesCardBeatWinner(played.card, trickWinner(before, trump).winnerPlay.card, trickWinner(before, trump).isWinnerFirstCard, trump) : null;
-            const recWins = before.length && coach.rec ? doesCardBeatWinner(coach.rec, trickWinner(before, trump).winnerPlay.card, trickWinner(before, trump).isWinnerFirstCard, trump) : null;
-            const partnerFront = before.length && trickWinner(before, trump).winnerPlay.seat === 2;
-            if (before.length && played.card.suit === trump && played.card.rank === '7' && v.hand.length > 0) verdict = C('bad', { hint: LANG === 'de' ? 'Den Teufel nachgeworfen! Der holt nur als Anspiel – ' + cardName(coach.rec) + ' wäre der Abwurf gewesen.' : 'The Devil thrown in! He only takes as a lead – ' + cardName(coach.rec) + ' was the card to throw.' });
-            else if (partnerFront && (played.card.suit === trump || NORMAL_RANK_ORDER[played.card.rank] >= 11)) verdict = C('bad', { hint: LANG === 'de' ? 'Ich lag vorn – die Karte war verschenkt.' : 'I was in front – that card was wasted.' });
-            else if (wins === false && recWins) verdict = C('bad', { hint: LANG === 'de' ? cardName(coach.rec) + ' hätte den Stich geholt.' : cardName(coach.rec) + ' would have taken the trick.' });
-            else if (wins) verdict = C('ok', { hint: LANG === 'de' ? 'Sie holt den Stich – ' + cardName(coach.rec) + ' hätte weniger gekostet.' : 'It takes the trick – ' + cardName(coach.rec) + ' would have cost less.' });
-            else verdict = C('ok', { hint: '' });
+        const trump = v.trump, de = LANG === 'de', rec = coach.rec;
+        const pc = coachCard(played.card, trump, before.length === 0), rc = rec ? coachCard(rec, trump, before.length === 0) : '';
+        let kind = 'good', note = '';
+        if (!(rec && sameCard(rec, played.card))) {
+            const st = before.length ? trickWinner(before, trump) : null;
+            const wins = st ? doesCardBeatWinner(played.card, st.winnerPlay.card, st.isWinnerFirstCard, trump) : null;
+            const recWins = st && rec ? doesCardBeatWinner(rec, st.winnerPlay.card, st.isWinnerFirstCard, trump) : null;
+            const partnerFront = st && st.winnerPlay.seat === 2;
+            const unseen = unseenCards(v.hand, v.trick, v.played || []);
+            const isHalf = c => c.suit === trump && '345'.includes(c.rank);
+            const isFull = c => c.suit === trump && 'U62'.includes(c.rank);
+            if (before.length && played.card.suit === trump && played.card.rank === '7' && v.hand.length > 0) { kind = 'bad'; note = de ? 'Den Teufel nachgeworfen! Der holt nur als Anspiel – ' + rc + ' wäre der Abwurf gewesen.' : 'The Devil thrown in! He only takes as a lead – ' + rc + ' was the card to throw.'; }
+            else if (partnerFront && (isFull(played.card) || isHalf(played.card) || NORMAL_RANK_ORDER[played.card.rank] >= 11)) {
+                const safe = cardIsSure(st.winnerPlay.card, st.isWinnerFirstCard, unseen, trump) || before.length === 3;
+                kind = 'bad'; note = de ? ('Ich lag mit ' + coachCard(st.winnerPlay.card, trump, st.isWinnerFirstCard) + ' vorn' + (safe ? ', und keiner konnte mich mehr nehmen' : '') + ' – ' + pc + ' war verschenkt; ' + rc + ' hätte es getan.') : ('I was in front with ' + coachCard(st.winnerPlay.card, trump, st.isWinnerFirstCard) + (safe ? ', and nobody could take it from me' : '') + ' – ' + pc + ' was wasted; ' + rc + ' would have done.'); }
+            else if (wins === false && recWins) { kind = 'bad'; note = de ? pc + ' holte nichts – ' + rc + ' hätte den Stich geholt.' : pc + ' took nothing – ' + rc + ' would have taken the trick.'; }
+            else if (wins && rec && recWins && botKeepValue(rec, trump) < botKeepValue(played.card, trump)) { kind = 'ok'; note = de ? pc + ' holt ihn, aber ' + rc + ' hätte gereicht – ' + pc + ' fehlt dir jetzt später.' : pc + ' takes it, but ' + rc + ' would have been enough – now you lack ' + pc + ' later.'; }
+            else if (!before.length && isHalf(played.card) && unseen.some(c => NORMAL_RANK_ORDER[c.rank] > NORMAL_RANK_ORDER[{ '3': 'O', '4': 'U', '5': '10' }[played.card.rank]])) { kind = 'ok'; note = de ? 'Einen halben Trumpf anführen, solange die hohen Karten noch draußen sind – ein König nimmt ihn dir. ' + rc + ' wäre der Zug gewesen.' : 'Leading a half-trump while the high cards are still out – a King takes it. ' + rc + ' was the play.'; }
+            else if (!before.length && rec && rec.suit === trump && rec.rank === '7') { kind = 'ok'; note = de ? 'Du hältst den Teufel und führst ihn nicht an – als Anspiel ist er beinah ein sicherer Stich.' : 'You hold the Devil and do not lead him – as a lead he is nearly a sure trick.'; }
+            else if (!before.length && rec) { kind = 'ok'; note = de ? rc + ' wäre das bessere Anspiel gewesen.' : rc + ' would have been the better lead.'; }
+            else if (wins) { kind = 'good'; }
+            else if (rec && botKeepValue(rec, trump) < botKeepValue(played.card, trump)) { kind = 'ok'; note = de ? (partnerFront ? 'Ich lag vorn – ' : 'Der Stich war ohnehin verloren – ') + rc + ' wäre der billigere Abwurf gewesen.' : (partnerFront ? 'I was in front – ' : 'The trick was lost anyway – ') + rc + ' would have been the cheaper throw-away.'; }
+            else { kind = 'good'; }
         }
-        if (verdict.indexOf(C('good')) !== 0 && verdict.indexOf('Geht') !== 0 && verdict.indexOf('It works') !== 0) coach.mistakes++;
-        coachSay(C('you_played', { card: '<b>' + coachCard(played.card, trump, before.length === 0) + '</b>' }) + verdict);
+        if (kind !== 'good') coach.mistakes++;
+        coach.lastReview = { trickNumber: v.trickNumber, card: played.card, rec, kind, note };
+        const verdict = kind === 'good' ? C('good') : kind === 'ok' ? C('ok', { hint: note }) : C('bad', { hint: note });
+        coachSay(C('you_played', { card: '<b>' + pc + '</b>' }) + verdict);
     }
     function coachTrickEnd(v) {
         const trick = coach.lastTrick; if (!trick || trick.length < 4) return;
@@ -4449,7 +4485,8 @@
         else why = C('why_high');
         const key = winnerPlay.seat === 0 ? 'trick_won_you' : winnerPlay.seat === 2 ? 'trick_won_partner' : 'trick_lost';
         const mine = trick.find(p => p.seat === 0);
-        coach.tricks.push({ seat: winnerPlay.seat, card: wc, led: isWinnerFirstCard, why, mine: mine ? mine.card : null, ledCard: trick[0].card });
+        const review = coach.lastReview && coach.lastReview.trickNumber === (coach.tricks || []).length ? coach.lastReview : null;
+        coach.tricks.push({ seat: winnerPlay.seat, card: wc, led: isWinnerFirstCard, why, mine: mine ? mine.card : null, ledCard: trick[0].card, review });
         coachSay(C(key, { name: v.seats[winnerPlay.seat].name, card: '<b>' + coachCard(wc, v.trump, isWinnerFirstCard) + '</b>', why }));
     }
     function coachHandVerdict(v) {
@@ -4478,14 +4515,27 @@
                 let why = tr.why;
                 if (why === C('why_high')) why = de ? 'die höchste Karte der angespielten Farbe ' + suitName(tr.ledCard.suit) + ' – kein Trumpf fiel.' : 'the highest card of the suit led, ' + suitName(tr.ledCard.suit) + ' – no trump fell.';
                 const mine = tr.seat !== 0 && tr.mine ? ' ' + (de ? 'Du gabst ' : 'You gave ') + coachCard(tr.mine, v.trump, tr.ledCard === tr.mine) + '.' : '';
-                return (i + 1) + '. <b>' + who + '</b>' + (de ? ' nimmt mit ' : ' takes with ') + '<b>' + coachCard(tr.card, v.trump, tr.led) + '</b> – ' + why + mine;
+                let rv = '';
+                if (tr.review && tr.review.kind === 'bad') rv = ' <span class="rbad">' + (de ? 'Verschenkt: ' : 'Wasted: ') + tr.review.note + '</span>';
+                else if (tr.review && tr.review.kind === 'ok' && tr.review.note) rv = ' <span class="rok">' + (de ? 'Besser: ' : 'Better: ') + tr.review.note + '</span>';
+                return (i + 1) + '. <b>' + who + '</b>' + (de ? (tr.seat === 0 ? ' nimmst mit ' : ' nimmt mit ') : (tr.seat === 0 ? ' take with ' : ' takes with ')) + '<b>' + coachCard(tr.card, v.trump, tr.led) + '</b> – ' + why + mine + rv;
             });
+            // Der eine Zug, der die Runde entschieden hat
+            const bads = (coach.tricks || []).map((tr, i) => ({ tr, i })).filter(x => x.tr.review && x.tr.review.kind === 'bad');
+            const costly = bads.find(x => x.tr.seat === 1 || x.tr.seat === 3) || bads[0];
+            const oks = (coach.tricks || []).filter(tr => tr.review && tr.review.kind === 'ok').length;
             const foeTrumps = (coach.tricks || []).filter(tr => (tr.seat === 1 || tr.seat === 3) && tr.card.suit === v.trump && 'U762'.includes(tr.card.rank)).length;
             const ourTrumps = (coach.tricks || []).filter(tr => (tr.seat === 0 || tr.seat === 2) && tr.card.suit === v.trump && 'U762'.includes(tr.card.rank)).length;
             let because;
             if (won) because = de ? (ourTrumps >= 2 ? 'Wir hatten die echten Trümpfe – und haben sie zur rechten Zeit gesetzt.' : 'Die Gegner hatten die Trümpfe nicht, wo sie sie brauchten; unsere hohen Farbkarten haben gereicht.') : (ourTrumps >= 2 ? 'We held the true trumps – and played them at the right moment.' : 'The enemy lacked trumps where they needed them; our high plain cards were enough.');
             else because = de ? (foeTrumps >= 2 ? 'Die Gegner hielten ' + foeTrumps + ' der vier echten Trümpfe und haben damit gestochen – dagegen hilft nur Zählen und Abwarten.' : (coach.mistakes > 0 ? 'Nicht die Karten waren es: ' + coach.mistakes + (coach.mistakes === 1 ? ' Zug war' : ' Züge waren') + ' verschenkt – sieh die Liste.' : 'Die Gegner hatten die höheren Farbkarten in den angespielten Farben; das Blatt war einfach dünn.')) : (foeTrumps >= 2 ? 'The enemy held ' + foeTrumps + ' of the four true trumps and used them – only counting and patience help against that.' : (coach.mistakes > 0 ? 'Not the cards: ' + coach.mistakes + (coach.mistakes === 1 ? ' play was' : ' plays were') + ' wasted – see the list.' : 'The enemy held the higher cards in the suits that were led; the hand was simply thin.'));
-            coach.roundReason = '<b>' + (de ? 'Warum: ' : 'Why: ') + '</b>' + because + '<br>' + lines.join('<br>');
+            let lesson = '';
+            if (!won && costly) lesson = de ? 'Der Zug, der die Runde gekostet hat – Stich ' + (costly.i + 1) + ': ' + costly.tr.review.note : 'The play that cost the round – trick ' + (costly.i + 1) + ': ' + costly.tr.review.note;
+            else if (won && costly) lesson = de ? 'Gewonnen, aber Stich ' + (costly.i + 1) + ' war verschenkt: ' + costly.tr.review.note : 'Won, but trick ' + (costly.i + 1) + ' was wasted: ' + costly.tr.review.note;
+            else if (!bads.length && !oks) lesson = de ? 'Kein Zug verschenkt – diese Runde haben die Karten entschieden.' : 'No play wasted – this round the cards decided.';
+            else if (!bads.length && oks) lesson = de ? 'Nichts verschenkt, aber ' + oks + (oks === 1 ? ' Zug war' : ' Züge waren') + ' teurer als nötig – sieh die Liste.' : 'Nothing wasted, but ' + oks + (oks === 1 ? ' play was' : ' plays were') + ' dearer than needed – see the list.';
+            if (!won && costly) because = lesson; else if (lesson) because += ' ' + lesson;
+            coach.roundReason = goldCards('<b>' + (de ? 'Warum: ' : 'Why: ') + '</b>' + because + '<br>' + lines.join('<br>'));
             const reason = document.getElementById('end-reason'); reason.innerHTML = coach.roundReason; reason.style.display = 'block';
             document.getElementById('lesson-reason').innerHTML = '<span class="rtitle">' + (de ? (won ? 'Letzte Runde – gewonnen ' : 'Letzte Runde – verloren ') : (won ? 'Last round – won ' : 'Last round – lost ')) + v.roundResult.tricks[0] + ':' + v.roundResult.tricks[1] + '</span>' + coach.roundReason;
             coachSay(C(won ? 'round_won' : 'round_lost', { a: v.roundResult.tricks[0], b: v.roundResult.tricks[1], sum: C(won ? 'sum_good' : 'sum_bad') }) + ' ' + C('next'));
@@ -4500,6 +4550,7 @@
         const seats = [{ name: myName, kind: 'human' }, { name: BOT_NAMES[1], kind: 'bot' }, { name: C('name'), kind: 'bot' }, { name: BOT_NAMES[3], kind: 'bot' }];
         game = new Game(seats, (seat, view) => { if (seat === 0) { renderView(view); coachObserve(view); } });
         game.coachSeat = 2;   // nur Konz als Gefährte rechnet voraus; die Gegner bleiben die alten Knechte
+        coach.hist = []; coach.histIdx = -1; document.getElementById('lesson-prev').style.display = 'none';
         onLocalCard = card => game.submit(0, card);
         showScreen('game');
         document.getElementById('log-wrap').style.display = 'none';
