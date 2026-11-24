@@ -692,7 +692,8 @@
         .seat-rel { font-size: 16px; color: var(--gold); }
         /* Der Hinweis (wer am Zug ist, Geben) steht im eigenen Namensschild unter der Hand - nie unter Karten, nie auf dem Kreis */
         body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }   /* Graustufen-Glättung: Subpixel-Schrift tanzt sonst unter dem Kerzenlicht */
-        #turn-hint, #south .player-name, .player-area .pn, #lesson-text, #lesson-head, #score-wrap, #log-wrap, #trump-suit-name { transform: translateZ(0); backface-visibility: hidden; }   /* nur die Schriftfelder selbst auf eigene Ebenen (keine Container, nicht das Kerzenlicht) */
+        #turn-hint, #south .player-name, .player-area .pn, #lesson-text, #lesson-head, #score-wrap, #log-wrap { transform: translateZ(0); backface-visibility: hidden; }
+        #trump-suit-name { transform: translateX(-50%) translateZ(0); backface-visibility: hidden; }   /* die Zentrierung bleibt erhalten */   /* nur die Schriftfelder selbst auf eigene Ebenen (keine Container, nicht das Kerzenlicht) */
         #turn-hint { display: block; font-size: 17px; color: rgba(232, 179, 106, 0.95); letter-spacing: 1px; margin-top: 3px; min-height: 21px; white-space: nowrap; max-width: min(92vw, 760px); margin-left: auto; margin-right: auto; overflow: hidden; text-overflow: ellipsis; }
         #south .player-name { flex-direction: column; min-width: 360px; line-height: 1.15; }
         #south .player-name .pn { display: block; }
@@ -917,7 +918,7 @@
                 <p class="hint-text" style="margin-top:14px" data-i18n="start_hint">Vier Plätze, zwei Parteien: Süd &amp; Nord gegen West &amp; Ost. Freie Plätze übernehmen Knechte (Computer). Die Regeln findest du jederzeit unter „Regularium“.</p>
                 <div id="start-version-row">
                     <button class="btn secondary" id="start-music-btn" onclick="toggleMusicMaster()" data-i18n="music_off">Spielleute: Aus</button>
-                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-22 10:02</p>
+                    <p class="hint-text" style="text-align:right; opacity:0.6; margin:0"><span data-i18n="version">Fassung</span> 2026-11-24 10:14</p>
                 </div>
                 <div id="start-footer">
                     <a href="https://www.ghostix-labors.com" target="_blank" rel="noopener">ghostix-labors.com</a>
